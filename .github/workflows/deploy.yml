@@ -20,9 +20,11 @@ jobs:
           node-version: '20'
       - name: Install dependencies
         run: npm install
+      - name: Extract repo name
+        run: echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
       - name: Build
         env:
-          VITE_BASE: /${{ github.repository_name }}/
+          VITE_GITHUB_REPO_NAME: /${{ env.REPO_NAME }}/
         run: npm run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
