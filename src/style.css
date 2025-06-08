@@ -1,0 +1,8 @@
+@import "@shared/styles/base.css";
+@import "@shared/styles/variables.css";
+@import "@shared/styles/themes.css";
+@import "@shared/styles/components.css";
+
+body{
+    background-color: var(--bg-color);
+}

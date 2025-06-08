@@ -1,0 +1,19 @@
+.variant-button-default {
+    background-color: var(--primary-color);
+    color: var(--text-white);
+    transition: background-color 0.2s;
+}
+.variant-button-default:hover {
+    background-color: var(--primary-color-hover);
+    color: var(--text-white);
+}
+
+.variant-button-header {
+    background-color: var(--bg-button-color);
+    color: var(--text-black);
+    transition: background-color 0.2s;
+}
+
+.variant-button-header:hover {
+    background-color: var(--bg-button-hover);
+}
