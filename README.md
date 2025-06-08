@@ -128,6 +128,9 @@ Para mantener nuestro flujo de trabajo en Git organizado, seguimos una convenci√
 * **`feature/`**: Para nuevas funcionalidades.
   Ejemplo: `feature/login-page`
 
+* **`refactor/`**: Para nuevas funcionalidades.
+  Ejemplo: `refactor/login-page`
+
 * **`bugfix/`**: Para correcciones de errores.
   Ejemplo: `bugfix/fix-header-layout`
 
