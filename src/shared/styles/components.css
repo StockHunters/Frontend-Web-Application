@@ -1,5 +1,6 @@
 @import url("@shared/styles/components/button.css");
 @import url("@shared/styles/components/header.css");
+@import url("@shared/styles/components/SVGs.css");
 /* -- general components -- */
 
 .layout-bar {
@@ -8,7 +9,7 @@
     justify-content: space-between;
     align-items: center;
     border-radius: 5px;
-    padding: 10px;
+    padding: 15px;
     width: auto;
 
     /* colors */
