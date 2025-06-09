@@ -1,0 +1,34 @@
+{
+  "button": {
+    "auth": "Login",
+    "google": "Google",
+    "save": "Save",
+    "cancel": "Cancel",
+    "next": "Next",
+    "back": "Back",
+    "signup": "Sign up"
+  },
+
+  "form": {
+    "inputs": {
+      "name": "First Name",
+      "lastname": "Last Name",
+      "mail": "Email",
+      "password": "Password"
+    },
+    "placeholder": {
+      "name": "Enter your First Name",
+      "lastname": "Enter your Last Name",
+      "mail": "Enter your Email",
+      "password": "Enter your Password"
+    },
+    "required": "This field is required",
+    "submit": "Submit"
+  },
+
+  "table": {
+    "actions": "Actions",
+    "edit": "Edit",
+    "delete": "Delete"
+  }
+}

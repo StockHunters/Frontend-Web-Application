@@ -1,0 +1,34 @@
+{
+  "button": {
+    "auth": "Acceder",
+    "google": "Google",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "next": "Siguiente",
+    "back": "Volver",
+    "signup": "Registrarse"
+  },
+
+  "form": {
+    "inputs": {
+      "name": "Nombre",
+      "lastname": "Apellido",
+      "mail": "Correo",
+      "password": "Contraseña"
+    },
+    "placeholder": {
+      "name": "Inserte su Nombre",
+      "lastname": "Inserte su Apellido",
+      "mail": "Inserte su Correo",
+      "password": "Inserte su Contraseña"
+    },
+    "required": "Este campo es obligatorio",
+    "submit": "Enviar"
+  },
+
+  "table": {
+    "actions": "Acciones",
+    "edit": "Editar",
+    "delete": "Eliminar"
+  }
+}

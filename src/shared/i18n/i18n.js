@@ -8,10 +8,14 @@ import UIes from "@shared/i18n/locales/ui/es.json";
 import DATen from "@shared/i18n/locales/content/en.json";
 import DATes from "@shared/i18n/locales/content/es.json";
 
+// import languages from Shared context app
+import SHAREDen from "@shared/i18n/locales/shared/en.json";
+import SHAREDes from "@shared/i18n/locales/shared/es.json";
+
 // set messages options
 const messages = {
-    en: {...DATen, ui: UIen},
-    es: {...DATes, ui: UIes},
+    en: { ui: UIen, shared: SHAREDen, ...DATen  },
+    es: { ui: UIes, shared: SHAREDes, ...DATes },
 }
 
 // create i18n instance

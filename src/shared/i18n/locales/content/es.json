@@ -1,0 +1,31 @@
+{
+  "auth": {
+    "login":{
+      "title": "Iniciar Sesión"
+    },
+    "signup": {
+      "title": "Registrarse"
+    }
+  },
+  "auditing": {
+
+  },
+  "inventory": {
+
+  },
+  "organization": {
+
+  },
+  "procurement": {
+
+  },
+  "reporting": {
+
+  },
+  "sales": {
+
+  },
+  "payment": {
+
+  }
+}

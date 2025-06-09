@@ -1,0 +1,12 @@
+{
+  "header": {
+    "clients": "Clientes",
+    "products": "Productos",
+    "sales": "Ventas",
+    "reports": "Reportes"
+  },
+  "footer": {
+    "phone": "Teléfono",
+    "mail": "Correo"
+  }
+}
