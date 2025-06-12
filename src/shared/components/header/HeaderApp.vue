@@ -2,20 +2,32 @@
 import ThemeButton from "@shared/components/buttons/ThemeButton.vue";
 import LanguageButton from "@shared/components/buttons/LanguageButton.vue";
 import GenericButton from "@shared/components/buttons/GenericButton.vue";
+import DropdownButton from "@shared/components/buttons/DropdownButton.vue";
+import {useAuth} from "@shared/composables/useAuth.js";
 
 export default {
   name: "HeaderApp",
   components: {
     Button: GenericButton,
+    AccountMenu: DropdownButton,
     LanguageButton,
-    ThemeButton
+    ThemeButton,
   },
   data() {
     return {
-      isMenuOpen: false,
+      isMenuOpen: false
     };
   },
-
+  computed: {
+    AccountMenuItems() {
+      return [
+        {label:this.$t('ui.accountItems.profile'), link:'/profile'},
+        {label:this.$t('ui.accountItems.upgrade'), link:'/upgrade'},
+        {label:this.$t('ui.accountItems.settings'), link:'/settings'},
+        {label:this.$t('ui.accountItems.logout'), action:useAuth().logout},
+      ]
+    }
+  },
   methods: {
     toggleMenu() {
       this.isMenuOpen = !this.isMenuOpen;
@@ -28,9 +40,9 @@ export default {
   <header class="layout-bar">
 
     <div class="header-left-side" >
-      <Button link="/" variant="none" custom-class="logo-link">
-        <img src="/Isotipo_white.png" alt="StockHunter icon" class="header-logo">
-      </Button>
+      <AccountMenu :items="AccountMenuItems"
+                      avatar="src/shared/assets/icons/user-icon.svg"
+                      custom-class="header-logo"/>
     </div>
 
     <div class="header-right-side">
@@ -94,7 +106,7 @@ export default {
     background-color: var(--primary-color);
     border-radius: 5px;
     padding: 5px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     z-index: 10;
   }
 }
