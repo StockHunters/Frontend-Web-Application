@@ -1,135 +1,115 @@
 <script>
-import SvgIcon from "@shared/lib/svg/SvgIcon.vue";
+import GenericButton from './GenericButton.vue'
 
 export default {
-  name: "DropdownToggle",
-  components: { SvgIcon },
+  name: 'DropdownButton',
+  components: { GenericButton },
+
   props: {
-    /**
-     * Lista de opciones (opcional si se usa solo como toggle nav)
-     * @type {Array<{ label: string, value: any, to?: string }>}
-     */
-    items: { type: Array, default: () => [] },
-
-    /**
-     * Icono opcional a la izquierda
-     * @type {string}
-     */
-    icon: { type: String, default: "" },
-
-    /**
-     * Variante del botón (visual)
-     * @type {string}
-     */
-    variant: { type: String, default: "default" },
-
-    /**
-     * Variante del icono SVG
-     * @type {string}
-     */
-    iconVariant: { type: String, default: "default" }
+    avatar: { type: String, default: '' },
+    items: { type: Array, required: true },
+    variant: { type: String, default: 'default' },
+    customClass: { type: String, default: '' },
   },
+
   data() {
     return {
-      open: false
-    };
-  },
-  computed: {
-    hasMenu() {
-      return this.items.length > 0;
-    },
-    buttonClass() {
-      return [`variant-button-${this.variant}`].join(" ").trim();
+      open: false,
     }
   },
-  mounted() {
-    document.addEventListener("click", this.handleClickOutside);
-  },
-  beforeUnmount() {
-    document.removeEventListener("click", this.handleClickOutside);
-  },
+
   methods: {
-    toggle() {
-      this.open = !this.open;
+    toggleDropdown() {
+      this.open = !this.open
     },
-    selectItem(item) {
-      this.$emit("select", item);
-      this.open = false;
-    },
-    handleClickOutside(e) {
-      if (!this.$el.contains(e.target)) {
-        this.open = false;
+
+    handleItemClick(item) {
+      this.open = false
+      if (item.action) {
+        item.action()
+      } else if (item.link) {
+        this.$router.push(item.link)
       }
     }
   }
-};
+}
 </script>
 
 <template>
   <div class="dropdown-wrapper">
-    <button @click="toggle" :class="buttonClass" class="dropdown-button">
-      <SvgIcon v-if="icon" :name="icon" :variant="iconVariant" />
-      <slot>
-        <!-- fallback -->
-        <span>Toggle</span>
-      </slot>
-    </button>
 
-    <!-- Dropdown menu -->
-    <ul v-if="open && hasMenu" class="dropdown-menu">
-      <li
-          v-for="(item, idx) in items"
-          :key="idx"
-          @click="selectItem(item)"
-          class="dropdown-item"
-      >
-        <RouterLink v-if="item.to" :to="item.to">{{ item.label }}</RouterLink>
-        <span v-else>{{ item.label }}</span>
-      </li>
-    </ul>
+    <div v-if="avatar" class="avatar-container">
+      <img  :src="avatar" alt="Avatar" :class="`avatar ` + customClass" @click.prevent="toggleDropdown" />
+    </div>
+
+    <GenericButton
+        v-else
+        :variant="variant"
+        :customClass="customClass"
+        link=""
+        @click.prevent="toggleDropdown"
+    >
+      <span> <slot/> </span>
+    </GenericButton>
+
+    <div v-if="open" class="dropdown-menu">
+      <ul>
+        <li v-for="(item, i) in items" :key="i" @click="handleItemClick(item)">
+          {{ item.label }}
+        </li>
+      </ul>
+    </div>
+
   </div>
 </template>
 
 <style scoped>
+
 .dropdown-wrapper {
   position: relative;
   display: inline-block;
 }
 
-.dropdown-button {
-  display: flex;
+.avatar {
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  padding: 2px;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  border-radius: 6px;
   cursor: pointer;
-  font-weight: 600;
+}
+
+.avatar:hover {
+  background-color: var(--primary-color-hover);
 }
 
 .dropdown-menu {
   position: absolute;
-  top: 100%;
-  left: 0;
-  min-width: 160px;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  margin-top: 4px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  z-index: 100;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  margin-top: 5px;
+  padding: 10px;
+  border-radius: 4px;
+  min-width: 150px;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-.dropdown-item {
-  padding: 10px 14px;
+.dropdown-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dropdown-menu li {
+  padding: 8px 15px;
   cursor: pointer;
+  transition: background 0.5s;
 }
 
-.dropdown-item:hover {
-  background: #f4f4f4;
+.dropdown-menu li:hover {
+  background-color: var(--primary-color-hover);
+  border-radius: 5px;
 }
 
-.dropdown-item a {
-  text-decoration: none;
-  color: inherit;
-}
 </style>
