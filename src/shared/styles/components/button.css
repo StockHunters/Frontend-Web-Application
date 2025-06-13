@@ -44,3 +44,24 @@
 .variant-button-tools:hover {
     opacity: 0.8;
 }
+
+.variant-button-color {
+    background-color: var(--color-blue-500);
+    color: var(--text-white);
+    transition: background-color 0.2s;
+}
+
+.variant-button-color:hover {
+    background-color: var(--primary-color-hover);
+}
+
+.variant-button-outline {
+    border: 0.15rem solid var(--color-blue-500);
+    background-color: transparent;
+    color: var(--text-color);
+    transition: background-color 0.2s;
+}
+
+.variant-button-outline:hover {
+    background-color: var(--bg-button-hover);
+}
