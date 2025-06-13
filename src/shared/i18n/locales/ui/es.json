@@ -1,4 +1,11 @@
 {
+  "accountItems": {
+    "settings": "Herramientas",
+    "logout": "Cerrar Sesión",
+    "profile": "Perfil",
+    "upgrade": "Actualizar plan"
+  },
+
   "button": {
     "auth": "Acceder",
     "google": "Google",

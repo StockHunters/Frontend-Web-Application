@@ -8,5 +8,11 @@
   "footer": {
     "phone": "Teléfono",
     "mail": "Correo"
+  },
+  "notfound": {
+    "title": "404",
+    "subtitle": "¡Uy! La página que buscas no existe.",
+    "content": "La URL puede ser incorrecta o la página puede haber sido movida o eliminada.",
+    "button": "Inicio"
   }
 }

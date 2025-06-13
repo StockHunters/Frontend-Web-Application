@@ -1,4 +1,11 @@
 {
+  "accountItems": {
+    "settings": "Settings",
+    "logout": "Log Out",
+    "profile": "Profile",
+    "upgrade": "Upgrade Plan"
+  },
+
   "button": {
     "auth": "Login",
     "google": "Google",

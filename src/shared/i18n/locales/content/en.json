@@ -1,6 +1,11 @@
 {
   "auth": {
-
+    "login":{
+      "title": "Login"
+    },
+    "signup": {
+      "title": "Sign Up"
+    }
   },
   "auditing": {
 
