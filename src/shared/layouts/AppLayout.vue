@@ -9,9 +9,9 @@ export default {
 
 <template>
   <div class="app-layout layout">
-    <Header/>
+    <Header aria-label="header from application"/>
 
-    <main>
+    <main aria-label="main from application">
       <RouterView/>
     </main>
 

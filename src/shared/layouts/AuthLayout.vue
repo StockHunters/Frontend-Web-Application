@@ -10,13 +10,13 @@ export default {
 
 <template>
   <div class="auth-layout layout">
-    <Header/>
+    <Header aria-label="header from authentication" />
 
-    <main>
+    <main aria-label="main from authentication">
       <RouterView/>
     </main>
 
-    <Footer/>
+    <Footer aria-label="footer from authentication" />
   </div>
 </template>
 
