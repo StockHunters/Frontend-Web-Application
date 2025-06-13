@@ -13,6 +13,9 @@ import AppLayout from "@shared/layouts/AppLayout.vue";
 import SignInView from "@/auth/views/SignInView.vue";
 import SignUpView from "@/auth/views/SignUpView.vue";
 
+// import NotFound
+import NotFound from "@shared/components/notfound/NotFound.vue";
+
 const routes = [
     {
         path: '/',
@@ -22,19 +25,19 @@ const routes = [
     {
         path: '/auth',
         name: 'auth',
-        meta: {title: 'Auth' },
+        meta: {title: 'StockHunters | Auth' },
         component: AuthLayout,
         children: [
             {
                 path: 'login',
                 name: 'auth.login',
-                meta: {title: 'login'},
+                meta: {title: 'StockHunters | login'},
                 component: SignInView,
             },
             {
                 path: 'signup',
                 name: 'auth.signup',
-                meta: {title: 'signup'},
+                meta: {title: 'StockHunters | signup'},
                 component: SignUpView,
             }
 
@@ -43,14 +46,19 @@ const routes = [
     {
         path:'/app',
         name: 'app',
-        meta: {title: 'app', requiresAuth: true },
+        meta: {title: 'StockHunters | app', requiresAuth: true },
         component: AppLayout,
     },
     {
         path: '/session',
         name: 'session',
         component: SessionLayout,
-    }
+    },
+    {
+        path: '/:pathMatch(.*)*',
+        name: 'NotFound',
+        component: NotFound
+    },
 ];
 
 const router = createRouter({
