@@ -28,6 +28,9 @@ export default {
      */
     link: { type: String, required: true },
 
+    type: { type: String },
+    form: { type: String},
+
     /**
      * @prop {Boolean} external
      * Si es `true`, el botón usará una etiqueta <a> para enlaces externos.
@@ -93,6 +96,15 @@ export default {
       <slot />
     </a>
 
+  <button
+      v-else-if="type"
+      :type="type"
+      :form="form"
+      :class="buttonClass"
+      class="type-html" >
+    <slot/>
+  </button>
+
     <RouterLink
         v-else
         :to="link"
@@ -119,5 +131,9 @@ export default {
   justify-content: center;
   align-items: center;
   font-weight: 600;
+}
+.type-html{
+  border: none;
+  cursor: pointer;
 }
 </style>
