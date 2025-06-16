@@ -12,6 +12,13 @@ import AppLayout from "@shared/layouts/AppLayout.vue";
 // import views
 import SignInView from "@/auth/views/SignInView.vue";
 import SignUpView from "@/auth/views/SignUpView.vue";
+import SessionView from "@/auth/views/SessionView.vue";
+
+import ProductsView from "@/inventory/views/ProductsView.vue";
+import ClientsView from "@/sales/views/ClientsView.vue";
+import DashboardView from "@/dashboard/views/DashboardView.vue";
+import SalesView from "@/sales/views/SalesView.vue";
+import ReportsView from "@/reporting/views/ReportsView.vue";
 
 // import NotFound
 import NotFound from "@shared/components/notfound/NotFound.vue";
@@ -27,6 +34,7 @@ const routes = [
         name: 'auth',
         meta: {title: 'StockHunters | Auth' },
         component: AuthLayout,
+        redirect: '/auth/login',
         children: [
             {
                 path: 'login',
@@ -40,7 +48,6 @@ const routes = [
                 meta: {title: 'StockHunters | signup'},
                 component: SignUpView,
             }
-
         ]
     },
     {
@@ -48,11 +55,52 @@ const routes = [
         name: 'app',
         meta: {title: 'StockHunters | app', requiresAuth: true },
         component: AppLayout,
+        children:[
+            {
+                path: '',
+                name: 'app.dashboard',
+                meta: {title: 'StockHunters | dashboard', requiresAuth: true },
+                component: DashboardView,
+            },
+            {
+                path: 'clients',
+                name: 'app.clients',
+                meta: {title: 'StockHunters | clients', requiresAuth: true },
+                component: ClientsView,
+            },
+            {
+                path:'products',
+                name:'app.products',
+                meta: {title: 'StockHunters | products', requiresAuth: true },
+                component: ProductsView
+            },
+            {
+                path:'sales',
+                name:'app.sales',
+                meta: {title: 'StockHunters | sales', requiresAuth: true },
+                component: SalesView
+            },
+            {
+                path:'reports',
+                name:'app.reports',
+                meta: {title: 'StockHunters | reports', requiresAuth: true },
+                component: ReportsView
+            }
+        ]
     },
     {
         path: '/session',
         name: 'session',
+        meta: {title: 'StockHunters | session', requiresAuth: true },
         component: SessionLayout,
+        children: [
+            {
+                path: '',
+                name: 'session.main',
+                meta: { title: 'StockHunters | session', requiresAuth: true },
+                component: SessionView,
+            }
+        ]
     },
     {
         path: '/:pathMatch(.*)*',
@@ -64,6 +112,18 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(__appBase),
     routes,
+});
+
+router.beforeEach((to, from, next) => {
+    const isAuthenticated = localStorage.getItem('auth_token');
+
+    if (to.meta.requiresAuth && !isAuthenticated) {
+        next({ name: 'auth.login' });
+    } else if (to.name === 'auth.login' && isAuthenticated) {
+        next({ name: 'app.dashboard' });
+    } else {
+        next();
+    }
 });
 
 router.afterEach((to) => {
