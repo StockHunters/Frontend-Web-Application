@@ -5,6 +5,10 @@
     },
     "signup": {
       "title": "Registrarse"
+    },
+    "session": {
+      "title": "Bienvenido",
+      "subtitle": "Elige un usuario para continuar"
     }
   },
   "auditing": {
@@ -23,7 +27,9 @@
 
   },
   "sales": {
-
+    "clients": {
+      "title": "Clientes"
+    }
   },
   "payment": {
 

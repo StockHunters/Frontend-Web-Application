@@ -12,10 +12,14 @@ import DATes from "@shared/i18n/locales/content/es.json";
 import SHAREDen from "@shared/i18n/locales/shared/en.json";
 import SHAREDes from "@shared/i18n/locales/shared/es.json";
 
+// import alerts
+import ALERTSen from "@shared/i18n/locales/alerts/en.json"
+import ALERTSes from "@shared/i18n/locales/alerts/es.json"
+
 // set messages options
 const messages = {
-    en: { ui: UIen, shared: SHAREDen, ...DATen  },
-    es: { ui: UIes, shared: SHAREDes, ...DATes },
+    en: { alerts: ALERTSen, ui: UIen, shared: SHAREDen, ...DATen  },
+    es: { alerts: ALERTSes, ui: UIes, shared: SHAREDes, ...DATes },
 }
 
 // create i18n instance
