@@ -28,7 +28,11 @@
       "name": "Enter your First Name",
       "lastname": "Enter your Last Name",
       "mail": "Enter your Email",
-      "password": "Enter your Password"
+      "password": "Enter your Password",
+      "dni": "Enter your DNI",
+      "phone": "Enter your Phone",
+      "status": "Select your Status",
+      "company": "Enter your Company"
     },
     "required": "This field is required",
     "submit": "Submit"

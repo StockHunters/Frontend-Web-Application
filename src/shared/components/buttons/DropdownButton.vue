@@ -30,6 +30,7 @@ export default {
       } else if (item.link) {
         this.$router.push(item.link)
       }
+      this.$emit('input', item.label)
     }
   }
 }

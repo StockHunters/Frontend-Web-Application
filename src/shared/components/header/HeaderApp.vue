@@ -21,9 +21,9 @@ export default {
   computed: {
     AccountMenuItems() {
       return [
-        {label:this.$t('ui.accountItems.profile'), link:'/profile'},
-        {label:this.$t('ui.accountItems.upgrade'), link:'/upgrade'},
-        {label:this.$t('ui.accountItems.settings'), link:'/settings'},
+        //{label:this.$t('ui.accountItems.profile'), link:'/profile'},
+        //{label:this.$t('ui.accountItems.upgrade'), link:'/upgrade'},
+        //{label:this.$t('ui.accountItems.settings'), link:'/settings'},
         {label:this.$t('ui.accountItems.logout'), action:useAuth().logout},
       ]
     }

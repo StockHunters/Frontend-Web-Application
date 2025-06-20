@@ -59,8 +59,9 @@ const routes = [
             {
                 path: '',
                 name: 'app.dashboard',
-                meta: {title: 'StockHunters | dashboard', requiresAuth: true },
-                component: DashboardView,
+                //meta: {title: 'StockHunters | dashboard', requiresAuth: true },
+                //component: DashboardView,
+                redirect: '/app/clients',
             },
             {
                 path: 'clients',

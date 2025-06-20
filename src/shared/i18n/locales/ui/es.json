@@ -28,7 +28,11 @@
       "name": "Inserte su Nombre",
       "lastname": "Inserte su Apellido",
       "mail": "Inserte su Correo",
-      "password": "Inserte su Contraseña"
+      "password": "Inserte su Contraseña",
+      "dni": "Inserte su DNI",
+      "phone": "Inserte su Teléfono",
+      "status": "Seleccione su Estado",
+      "company": "Inserte su Compañía"
     },
     "required": "Este campo es obligatorio",
     "submit": "Enviar"

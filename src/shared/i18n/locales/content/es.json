@@ -15,7 +15,9 @@
 
   },
   "inventory": {
-
+    "products": {
+      "title": "Productos"
+    }
   },
   "organization": {
 
@@ -28,7 +30,13 @@
   },
   "sales": {
     "clients": {
-      "title": "Clientes"
+      "title": "Clientes",
+      "modal":{
+        "title": "Agregar Cliente"
+      }
+    },
+    "sale": {
+      "title": "Ventas"
     }
   },
   "payment": {
