@@ -1,20 +1,13 @@
-import axios from "axios";
-import { BaseApiService } from "../../public/services/base.service.js";
+import { ApiService } from "@shared/api/apiServices.js";
 
-const invApi = import.meta.env.VITE_INV_API_URL;
-const salesEndpoint = "/sales"; // Asegúrate que esto sea correcto según tu .env
-
-const http = axios.create({
-    baseURL: invApi,
-});
-
-export class SaleApiService extends BaseApiService {
+export class SaleApiService extends ApiService {
     constructor() {
-        super(salesEndpoint);
+        super("sales");
     }
 
-    // Puedes añadir métodos específicos aquí si los necesitas, por ejemplo:
     getCompletedSales() {
-        return http.get(`${this.endpoint}?status=Completado`);
+        return super.getAll({status: "completed"});
     }
 }
+
+export const saleApiService = new SaleApiService();

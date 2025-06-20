@@ -1,4 +1,4 @@
-import { Sale } from "../models/sale.entity.js";
+import { Sale } from "@/sales/model/sale.entity.js";
 
 export class SaleAssembler {
     static toEntityFromResource(resource) {

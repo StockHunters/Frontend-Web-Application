@@ -1,0 +1,45 @@
+{
+  "auth": {
+    "login":{
+      "title": "Iniciar Sesión"
+    },
+    "signup": {
+      "title": "Registrarse"
+    },
+    "session": {
+      "title": "Bienvenido",
+      "subtitle": "Elige un usuario para continuar"
+    }
+  },
+  "auditing": {
+
+  },
+  "inventory": {
+    "products": {
+      "title": "Productos"
+    }
+  },
+  "organization": {
+
+  },
+  "procurement": {
+
+  },
+  "reporting": {
+
+  },
+  "sales": {
+    "clients": {
+      "title": "Clientes",
+      "modal":{
+        "title": "Agregar Cliente"
+      }
+    },
+    "sale": {
+      "title": "Ventas"
+    }
+  },
+  "payment": {
+
+  }
+}

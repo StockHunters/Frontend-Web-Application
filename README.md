@@ -102,6 +102,32 @@ src/
 └── main.js                        # Punto de entrada principal del proyecto
 ~~~
 
+
+~~~ bash
+src/
+├── auth/                   # Vistas para login, registro, perfil, roles.
+│
+├── organization/           # Vistas para detalles, planes, configuraciones.
+│
+├── inventory/              # Subcarpetas para productos, categorías, locales, stock, ajustes.
+│
+├── procurement/            # Subcarpetas para proveedores, órdenes, compras, lotes.
+│
+├── sales/                  # Subcarpetas para clientes, transacciones, precios.
+│
+├── reporting/              # Subcarpetas para dashboards y reportes.
+│
+├── auditing/               # Subcarpeta para logs de auditoría. 
+│
+├── shared/                        # Recursos compartidos reutilizables
+│   ├── components/               # UI genérica (ej. BaseButton.vue, Modal.vue)
+│   ├── utils/                    # Funciones utilitarias comunes (ej. formatDate.js)
+│   └── types/                    # Tipos o constantes globales
+│
+├── App.vue                        # Componente raíz
+└── main.js                        # Punto de entrada principal del proyecto
+~~~
+
 ## 🤝 Recomendaciones para trabajar en equipo
 
 ### 🌿 Rama
@@ -127,6 +153,9 @@ Para mantener nuestro flujo de trabajo en Git organizado, seguimos una convenci�
 
 * **`feature/`**: Para nuevas funcionalidades.
   Ejemplo: `feature/login-page`
+
+* **`refactor/`**: Para nuevas funcionalidades.
+  Ejemplo: `refactor/login-page`
 
 * **`bugfix/`**: Para correcciones de errores.
   Ejemplo: `bugfix/fix-header-layout`

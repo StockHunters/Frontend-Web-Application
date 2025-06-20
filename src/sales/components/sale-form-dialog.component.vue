@@ -1,6 +1,6 @@
 <script>
-import { Sale } from "../models/sale.entity.js";
-import { SaleApiService } from "../services/sale-api.service.js";
+import { Sale } from "@/sales/model/sale.entity.js";
+import { SaleApiService } from "@/sales/services/sale-api.service.js";
 
 export default {
   name: "sale-form-dialog",

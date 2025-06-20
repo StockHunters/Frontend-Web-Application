@@ -1,6 +1,10 @@
 import {createApp} from 'vue'
 import './style.css'
 import App from './App.vue'
+
+import i18n from "@shared/i18n/i18n.js";
+import router from "@shared/router/index.js"
+
 import PrimeVue from 'primevue/config'
 import {
     Avatar,
@@ -17,14 +21,11 @@ import {
     Tooltip
 } from 'primevue'
 import Aura from '@primeuix/themes/aura';
-import i18n from "./i18n.js";
-import 'primeicons/primeicons.css';
-import 'primeflex/primeflex.css';
-import router from "./router/index.js";
 
-const app = createApp(App)
-app
-    .use(PrimeVue, { ripple: true, theme: { preset: Aura }})
+
+const app = createApp(App);
+
+app.use(PrimeVue, { ripple: true, theme: { preset: Aura }})
     .component('pv-column', Column)
     .component('pv-button', Button)
     .component('pv-card',Card)
@@ -42,6 +43,7 @@ app
     .component('pv-calendar', Calendar)
     .component('pv-table', DataTable)
     .component('pv-dialog', Dialog)
-    .use(i18n)
-    .use(router)
-    .mount('#app')
+
+app.use(router);
+app.use(i18n);
+app.mount('#app');

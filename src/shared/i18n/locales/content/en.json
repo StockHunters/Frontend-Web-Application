@@ -1,0 +1,46 @@
+{
+  "auth": {
+    "login":{
+      "title": "Login"
+    },
+    "signup": {
+      "title": "Sign Up"
+    },
+    "session": {
+      "title": "Welcome",
+      "subtitle": "Choose a user for continue"
+    }
+  },
+  "auditing": {
+
+  },
+  "inventory": {
+    "products": {
+      "title": "Products"
+    }
+
+  },
+  "organization": {
+
+  },
+  "procurement": {
+
+  },
+  "reporting": {
+
+  },
+  "sales": {
+    "clients": {
+      "title": "Clients",
+      "modal":{
+        "title": "Add Client"
+      }
+    },
+    "sale": {
+      "title": "Sales"
+    }
+  },
+  "payment": {
+
+  }
+}

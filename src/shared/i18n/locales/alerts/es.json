@@ -1,0 +1,8 @@
+{
+  "email": "Correo",
+  "password": "Contraseña",
+  "firstname": "Nombres",
+  "lastname": "Apellidos",
+  "passwordCreate": "la contraseña requiere 6 caracteres",
+  "required": "es requerido"
+}

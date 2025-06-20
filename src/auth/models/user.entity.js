@@ -1,13 +1,28 @@
-export class User {
-  constructor(id = '', name = '', lastName = '', email = '', avatar = null) {
-    this.id = id;
-    this.name = name;
-    this.lastName = lastName;
-    this.email = email;
-    this.avatar = avatar;
-  }
+export class UserEntity {
+    constructor(id = '',
+                organization_id= '',
+                username = '',
+                email = '',
+                password_hash = '',
+                first_name = '',
+                last_name = '',
+                profile_image_url = null,
+                role = '',
+                created_at = null) {
 
-  get fullName() {
-    return `${this.name} ${this.lastName}`;
-  }
+        this.id = id;
+        this.organizationId = organization_id;
+        this.username = username;
+        this.email = email;
+        this.pwdHash = password_hash;
+        this.firstname = first_name;
+        this.lastname = last_name;
+        this.avatarUrl = profile_image_url;
+        this.role = role;
+        this.createdAt = created_at;
+    }
+
+    get fullName() {
+        return `${this.firstname} ${this.lastname}`;
+    }
 }

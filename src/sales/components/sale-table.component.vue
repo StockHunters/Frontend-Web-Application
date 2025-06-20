@@ -1,8 +1,8 @@
 <script>
-import { Sale } from "../models/sale.entity.js";
-import {SaleApiService} from "../services/sale-api.service.js";
-import {SaleAssembler} from "../services/sale.assembler.js";
-import SaleFormDialog from "./sale-form-dialog.component.vue";
+import { Sale } from "@/sales/model/sale.entity.js";
+import {SaleApiService} from "@/sales/services/sale-api.service.js";
+import {SaleAssembler} from "@/sales/services/sale.assembler.js";
+import SaleFormDialog from "@/sales/components/sale-form-dialog.component.vue";
 export default {
   name: "sale-table",
   components: {SaleFormDialog},
