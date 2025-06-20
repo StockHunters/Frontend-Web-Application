@@ -1,4 +1,4 @@
-import {createRouter, createWebHistory} from "vue-router";
+import {createRouter, createWebHashHistory, createWebHistory} from "vue-router";
 import {__appBase} from "@globals/app.config.js";
 
 // const
@@ -111,7 +111,7 @@ const routes = [
 ];
 
 const router = createRouter({
-    history: createWebHistory(__appBase),
+    history: createWebHashHistory(__appBase),
     routes,
 });
 
