@@ -22,11 +22,11 @@ export default {
   computed: {
     columns() {
       return [
-        { field: "date", header: $t('sales.options.date') },
-        { field: "product_id", header:  $t('sales.options.product') },
-        { field: "quantity", header:  $t('sales.options.quantity') },
-        { field: "status", header:  $t('sales.options.status') },
-        { field: "customer_id", header:  $t('sales.options.client') }
+        { field: "date", header: "Fecha" },
+        { field: "product_id", header: "Producto" },
+        { field: "quantity", header: "Cantidad" },
+        { field: "status", header: "Estado" },
+        { field: "customer_id", header: "Cliente" }
       ];
     },
     filteredSales() {
@@ -77,17 +77,18 @@ export default {
         :options="columns"
         optionLabel="header"
         optionValue="field"
-        :placeholder="$t('sales.options.column')"
+        placeholder="Columna"
         class="dropdown"
     />
+
     <pv-input-text
         v-model="searchQuery"
-        :placeholder="$t('sales.options.search')"
+        placeholder="Buscar..."
         class="search-input"
     />
-    <pv-button :label="$t(selectionModeActive ? 'sales.options.not_select' : 'sales.options.select')"  class="action-button" @click="toggleSelectionMode"/>
+    <pv-button :label="selectionModeActive ? 'Cancelar Selección' : 'Seleccionar'"  class="action-button" @click="toggleSelectionMode"/>
     <pv-button
-        :label="$t('sales.options.add')"
+        label="Agregar"
         class="action-button p-button-success"
         @click="showAddDialog = true"
     />

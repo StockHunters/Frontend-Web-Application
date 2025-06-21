@@ -16,11 +16,7 @@
   },
   "inventory": {
     "products": {
-      "title": "Productos",
-      "category":"Selecciona una categoría",
-      "Stock": "Solo productos en Stock",
-      "minimum": "precio minimo",
-      "maximum": "precio maximo"
+      "title": "Productos"
     }
   },
   "organization": {
@@ -33,19 +29,6 @@
 
   },
   "sales": {
-    "options": {
-      "column": "Columna",
-      "date": "Fecha",
-      "product": "Producto",
-      "quantity": "Cantidad",
-      "status": "Estado",
-      "client": "Cliente",
-      "search": "Buscar...",
-      "select": "Seleccionar",
-      "not_select": "Cancelar Selección",
-      "Add": "Agregar"
-    },
-
     "clients": {
       "title": "Clientes",
       "modal":{
