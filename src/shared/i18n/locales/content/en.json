@@ -16,11 +16,7 @@
   },
   "inventory": {
     "products": {
-      "title": "Products",
-      "category": "Select one category",
-      "Stock": "Only products in stock",
-      "minimum": "minimum price",
-      "maximum": "maximum price"
+      "title": "Products"
     }
 
   },
@@ -34,21 +30,6 @@
 
   },
   "sales": {
-    "options": {
-      "column": "Column",
-      "date": "Date",
-      "product": "Product",
-      "quantity": "Quantity",
-      "status": "Status",
-      "client": "Client",
-      "search": "Search...",
-      "select": "Select",
-      "not_select": "Cancel Selection",
-      "Add": "Add"
-    },
-
-
-
     "clients": {
       "title": "Clients",
       "modal":{

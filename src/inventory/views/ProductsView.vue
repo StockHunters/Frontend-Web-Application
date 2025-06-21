@@ -6,12 +6,10 @@ import { productApiService} from "@/inventory/services/product-api.service.js"
 import Dropdown from 'primevue/dropdown';
 import InputNumber from 'primevue/inputnumber';
 import InputSwitch from 'primevue/inputswitch';
-import {$t} from "@primeuix/styled";
 
 export default {
   name: "ProductsView",
   methods: {
-    $t,
     tInventory,
     filterProducts() {
       this.filteredProducts = this.products.filter(product => {
@@ -66,23 +64,23 @@ export default {
       <Dropdown
           v-model="selectedCategory"
           :options="categories"
-          :placeholder= "$t('inventory.products.category')"
+          placeholder="Selecciona una categoría"
           @change="filterProducts"
       />
       <InputNumber
           v-model="priceRange.min"
-          :placeholder="$t('inventory.products.minimum')"
+          placeholder="Precio mínimo"
           @input="filterProducts"
       />
       <InputNumber
           v-model="priceRange.max"
-          :placeholder="$t('inventory.products.maximum')"
+          placeholder="Precio máximo"
           @input="filterProducts"
       />
       <InputSwitch
           v-model="stockAvailable"
           @change="filterProducts"
-      /> {{tInventory('products.Stock')}}
+      /> Solo productos en stock
     </div>
 
     <!-- Mostrar productos -->
