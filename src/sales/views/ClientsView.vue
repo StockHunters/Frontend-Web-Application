@@ -1,76 +1,135 @@
 <script>
-import {tSales} from "@shared/i18n/i18n.js";
+import { tSales } from "@shared/i18n/i18n.js";
 import ClientItem from "@/sales/components/ClientItem.vue";
-import {clientService} from "@/sales/services/client.services.js";
-import {ClientAssembler} from "@/sales/services/client.assembler.js";
+import { clientService } from "@/sales/services/client.services.js";
+import { ClientAssembler } from "@/sales/services/client.assembler.js";
 import DropdownButton from "@shared/components/buttons/DropdownButton.vue";
 import GenericButton from "@shared/components/buttons/GenericButton.vue";
 import ModalAddClient from "@/sales/components/ModalAddClient.vue";
+import { ClientEntity } from "@/sales/model/client.entity.js";
 
 export default {
   name: "ClientsView",
-  components: {ModalAddClient, GenericButton, DropdownButton, ClientItem},
-  data(){
+  components: { ModalAddClient, GenericButton, DropdownButton, ClientItem },
+
+  data() {
     return {
       clients: [],
-      localClients: [], // Clientes guardados localmente
+      localClients: [],
       showModal: false,
       isLoading: false,
-      error: null
+      error: null,
+      searchQuery: '',
+      apiConnected: false,
+      connectionTested: false,
+      apiInfo: null
     }
   },
+
+  computed: {
+    filteredClients() {
+      if (!this.searchQuery) return this.clients;
+
+      return this.clients.filter(client =>
+          client.firstName.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          client.lastName.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          client.email.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          (client.company && client.company.toLowerCase().includes(this.searchQuery.toLowerCase()))
+      );
+    }
+  },
+
   methods: {
     tSales,
 
-    // Cargar clientes locales del almacenamiento
     loadLocalClients() {
       const stored = localStorage.getItem('local_clients');
       if (stored) {
         try {
-          this.localClients = JSON.parse(stored);
-          console.log('Clientes locales cargados:', this.localClients);
+          const parsedClients = JSON.parse(stored);
+          this.localClients = parsedClients.map(c => new ClientEntity(
+              c.id, c.firstName, c.lastName, c.phone, c.email,
+              c.registration_date, c.dni, c.status, c.company, c.created_at
+          ));
+          console.log('📦 Clientes locales cargados:', this.localClients.length);
         } catch (error) {
-          console.error('Error al cargar clientes locales:', error);
+          console.error('❌ Error al cargar clientes locales:', error);
           this.localClients = [];
         }
       }
     },
 
     saveLocalClients() {
-      localStorage.setItem('local_clients', JSON.stringify(this.localClients));
-      console.log('Clientes locales guardados:', this.localClients);
+      const clientsToSave = this.localClients.map(c => c.toJson());
+      localStorage.setItem('local_clients', JSON.stringify(clientsToSave));
+      console.log('💾 Clientes locales guardados:', this.localClients.length);
     },
 
-    // Obtener clientes de la API y combinar con locales
+    async testApiConnection() {
+      console.log('🔍 Probando conexión a tu fake API de clientes...');
+      this.connectionTested = true;
+
+      try {
+        this.apiInfo = await clientService.getApiInfo();
+        console.log('📊 Información de tu API de clientes:', this.apiInfo);
+
+        const isConnected = await clientService.testConnection();
+        this.apiConnected = isConnected;
+
+        if (isConnected) {
+          console.log('✅ Tu fake API de clientes está funcionando correctamente');
+          this.error = null;
+        } else {
+          console.log('❌ No se pudo conectar a tu fake API de clientes');
+          this.error = "No se pudo conectar a tu fake API de clientes. Usando modo local.";
+        }
+
+        return isConnected;
+      } catch (error) {
+        console.error('❌ Error al probar conexión:', error);
+        this.apiConnected = false;
+        this.error = `Error de conexión: ${error.message}`;
+        return false;
+      }
+    },
+
     async fetchClients() {
       try {
         this.isLoading = true;
         this.error = null;
 
-        // Cargar clientes locales
         this.loadLocalClients();
 
-        // Intentar obtener clientes de la API
-        let apiClients = [];
-        try {
-          const response = await clientService.getAll();
-          apiClients = await ClientAssembler.toEntityFromResponse(response);
-        } catch (apiError) {
-          console.warn('No se pudieron cargar clientes de la API:', apiError);
-          // Continuar solo con clientes locales
+        const isConnected = await this.testApiConnection();
+
+        if (isConnected) {
+          try {
+            console.log('🔄 Obteniendo clientes de tu fake API...');
+            const response = await clientService.getAll();
+            const apiClients = await ClientAssembler.toEntityFromResponse(response);
+
+            console.log('✅ Clientes cargados desde tu API:', apiClients.length);
+            console.log('📦 Clientes locales agregados:', this.localClients.length);
+
+            this.clients = [...apiClients, ...this.localClients];
+
+          } catch (apiError) {
+            console.warn('❌ Error al obtener clientes de tu API:', apiError);
+            this.apiConnected = false;
+            this.clients = this.localClients;
+            this.error = `Error al cargar clientes de tu API: ${apiError.message}`;
+          }
+        } else {
+          this.clients = this.localClients;
+          this.error = "Sin conexión a tu fake API de clientes. Mostrando clientes guardados localmente.";
         }
 
-        // Combinar clientes de API y locales
-        this.clients = [...apiClients, ...this.localClients];
-
-        console.log('Clientes API:', apiClients.length);
-        console.log('Clientes locales:', this.localClients.length);
-        console.log('Total clientes mostrados:', this.clients.length);
+        console.log('📊 Total clientes mostrados:', this.clients.length);
 
       } catch (error) {
-        console.error("Error fetching clients:", error);
-        this.error = "Error al cargar los clientes";
-        // En caso de error, mostrar al menos los clientes locales
+        console.error("❌ Error general:", error);
+        this.error = `Error al cargar clientes: ${error.message}`;
+        this.apiConnected = false;
         this.loadLocalClients();
         this.clients = this.localClients;
       } finally {
@@ -90,28 +149,26 @@ export default {
       console.log('=== CLIENTE AÑADIDO ===');
       console.log('Datos recibidos:', newClient);
 
-      const localClient = {
-        id: 'local_' + Date.now(),
-        firstName: newClient.firstName || newClient.first_name,
-        lastName: newClient.lastName || newClient.last_name,
-        email: newClient.email,
-        phone: newClient.phone,
-        dni: newClient.dni,
-        status: newClient.status || 'Activo' || 'Inactivo',
-        company: newClient.company || '',
-        registration_date: new Date().toISOString().split('T')[0],
-        created_at: new Date().toISOString(),
-        isLocal: true // Marcar como cliente local
-      };
+      const clientEntity = new ClientEntity(
+          newClient.id,
+          newClient.firstName,
+          newClient.lastName,
+          newClient.phone,
+          newClient.email,
+          newClient.registration_date,
+          newClient.dni,
+          newClient.status,
+          newClient.company,
+          newClient.created_at
+      );
 
-      console.log('Cliente local creado:', localClient);
+      if (newClient.isLocal) {
+        clientEntity.isLocal = true;
+        this.localClients.push(clientEntity);
+        this.saveLocalClients();
+      }
 
-      this.localClients.push(localClient);
-
-      this.saveLocalClients();
-
-      this.clients.push(localClient);
-
+      this.clients.unshift(clientEntity);
       this.closeModal();
 
       console.log('✅ Cliente añadido exitosamente a la lista');
@@ -119,30 +176,57 @@ export default {
     },
 
     async refreshClients() {
+      console.log('🔄 Refrescando clientes desde tu API...');
       await this.fetchClients();
-    },
-
-    handleError(error) {
-      console.error("Error:", error);
-      this.error = error.message || "Ha ocurrido un error";
     },
 
     clearError() {
       this.error = null;
     },
 
-    debugClients() {
-      console.log('=== DEBUG CLIENTES ===');
-      console.log('Clientes mostrados:', this.clients);
-      console.log('Clientes locales:', this.localClients);
-      console.log('localStorage:', localStorage.getItem('local_clients'));
-    },
-
     clearLocalClients() {
       this.localClients = [];
       localStorage.removeItem('local_clients');
       this.fetchClients();
-      console.log('Clientes locales eliminados');
+      console.log('🗑️ Clientes locales eliminados');
+    },
+
+    async deleteClient(clientId) {
+      if (!confirm('¿Estás seguro de que quieres eliminar este cliente?')) {
+        return;
+      }
+
+      try {
+        if (this.apiConnected && !clientId.toString().startsWith('local_')) {
+          console.log('🗑️ Eliminando cliente de tu API:', clientId);
+          await clientService.delete(clientId);
+          console.log('✅ Cliente eliminado de tu API');
+        } else {
+          console.log('🗑️ Eliminando cliente local:', clientId);
+          this.localClients = this.localClients.filter(c => c.id !== clientId);
+          this.saveLocalClients();
+        }
+
+        this.clients = this.clients.filter(c => c.id !== clientId);
+        console.log('✅ Cliente eliminado exitosamente');
+
+      } catch (error) {
+        console.error('❌ Error al eliminar cliente:', error);
+        this.error = 'Error al eliminar el cliente. Intenta nuevamente.';
+      }
+    },
+
+    getConnectionStatus() {
+      if (!this.connectionTested) return '⏳ Conectando...';
+      return this.apiConnected ? '🟢' : '🔴';
+    },
+
+    async forceApiTest() {
+      console.log('🔧 Forzando prueba de tu fake API de clientes...');
+      await this.testApiConnection();
+      if (this.apiConnected) {
+        await this.fetchClients();
+      }
     }
   },
 
@@ -154,8 +238,25 @@ export default {
 
 <template>
   <div class="title-container">
-    <h1>{{tSales('clients.title')}}</h1>
+    <h1>{{ tSales('clients.title') }} <span class="connection-status">{{ getConnectionStatus() }}</span></h1>
     <div class="button-group">
+      <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Buscar clientes..."
+          class="search-input"
+      />
+
+
+
+      <GenericButton
+          link=""
+          variant="secondary"
+          @click="refreshClients"
+          :disabled="isLoading"
+      >
+        🔄 {{ isLoading ? 'Cargando...' : 'Actualizar' }}
+      </GenericButton>
 
       <GenericButton
           link=""
@@ -184,47 +285,61 @@ export default {
     </GenericButton>
   </div>
 
+
   <div v-if="isLoading" class="loading-container">
-    <p>Cargando clientes...</p>
+    <p>Cargando datos...</p>
   </div>
 
   <div v-else class="clients-container">
     <div
-        v-for="client in clients"
+        v-for="client in filteredClients"
         :key="client.id"
         class="client-card"
-        :class="{ 'local-client': client.isLocal }"
+        :class="{
+          'local-client': client.isLocal,
+          'api-client': !client.isLocal && apiConnected,
+          'inactive': !client.isActive
+        }"
     >
       <div class="client-info">
         <h3 class="client-name">
           {{ client.firstName }} {{ client.lastName }}
-          <span v-if="client.isLocal" class="local-badge">📱 Local</span>
         </h3>
         <p class="client-email">{{ client.email }}</p>
         <p class="client-phone" v-if="client.phone">📞 {{ client.phone }}</p>
+        <p class="client-dni" v-if="client.dni">🆔 {{ client.dni }}</p>
         <p class="client-company" v-if="client.company">🏢 {{ client.company }}</p>
-        <p class="client-status">Estado: {{ client.status }}</p>
+        <p class="client-status" :class="{ 'active': client.isActive, 'inactive': client.isInactive }">
+          Estado: {{ client.status }}
+        </p>
       </div>
 
       <div class="client-actions">
+        <button
+            @click="deleteClient(client.id)"
+            class="delete-button"
+            title="Eliminar cliente"
+        >
+          🗑️
+        </button>
+
         <GenericButton
             link=""
             variant="color"
         >
-          {{$t('ui.button.more')}}
+          {{ $t('ui.button.more') }}
         </GenericButton>
       </div>
     </div>
 
-    <!-- Mensaje cuando no hay clientes -->
-    <div v-if="clients.length === 0 && !isLoading" class="no-clients">
-      <p>No hay clientes registrados</p>
+    <div v-if="filteredClients.length === 0 && !isLoading" class="no-clients">
+      <p>{{ searchQuery ? 'No se encontraron clientes' : 'No hay clientes registrados' }}</p>
       <GenericButton
           link=""
           variant="primary"
           @click="openModal"
       >
-        Agregar primer cliente
+        {{ searchQuery ? 'Limpiar búsqueda' : 'Agregar primer cliente' }}
       </GenericButton>
     </div>
   </div>
@@ -250,19 +365,78 @@ export default {
   padding: 10px;
 }
 
+.connection-status {
+  font-size: 14px;
+  font-weight: normal;
+  margin-left: 10px;
+}
+
 .button-group {
   display: flex;
   gap: 10px;
   align-items: center;
 }
 
-h1{
+.search-input {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-primary-color);
   color: var(--text-color);
+  min-width: 200px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+h1 {
+  color: var(--text-color);
+}
+
+.debug-info {
+  background: var(--bg-secondary-color);
+  padding: 15px;
+  margin: 10px;
+  border-radius: 5px;
+  font-size: 13px;
+  color: var(--text-color);
+  border-left: 4px solid var(--primary-color);
+}
+
+.debug-info h4 {
+  margin: 0 0 10px 0;
+  color: var(--primary-color);
+}
+
+.debug-info p {
+  margin: 5px 0;
+}
+
+.debug-info pre {
+  background: var(--bg-primary-color);
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 11px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.debug-info details {
+  margin-top: 10px;
+}
+
+.debug-info summary {
+  cursor: pointer;
+  font-weight: bold;
+  color: var(--primary-color);
 }
 
 .clients-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 20px;
   padding: 30px;
 }
@@ -273,6 +447,9 @@ h1{
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  gap: 15px;
+  position: relative;
 }
 
 .client-card:hover {
@@ -285,12 +462,18 @@ h1{
   background: linear-gradient(135deg, var(--bg-secondary-color) 0%, rgba(76, 175, 80, 0.1) 100%);
 }
 
-.local-client.inactive {
-  border: 2px solid #f44336;
-  background: linear-gradient(135deg, var(--bg-secondary-color) 0%, rgba(244, 67, 54, 0.1) 100%);
+.api-client {
+  border: 2px solid #2196F3;
+  background: linear-gradient(135deg, var(--bg-secondary-color) 0%, rgba(33, 150, 243, 0.1) 100%);
 }
+
+.client-card.inactive {
+  border-left: 4px solid #f44336;
+  opacity: 0.7;
+}
+
 .client-info {
-  margin-bottom: 15px;
+  flex: 1;
 }
 
 .client-name {
@@ -305,7 +488,16 @@ h1{
 
 .local-badge {
   font-size: 12px;
-  background: #1e3a8a;
+  background: #4CAF50;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-weight: normal;
+}
+
+.api-badge {
+  font-size: 12px;
+  background: #2196F3;
   color: white;
   padding: 2px 6px;
   border-radius: 12px;
@@ -320,6 +512,7 @@ h1{
 }
 
 .client-phone,
+.client-dni,
 .client-company {
   font-size: 13px;
   color: var(--text-color);
@@ -328,15 +521,39 @@ h1{
 }
 
 .client-status {
-  font-size: 12px;
-  color: var(--text-color);
+  font-size: 13px;
   margin: 5px 0;
-  opacity: 0.7;
+  font-weight: 500;
+}
+
+.client-status.active {
+  color: #4CAF50;
+}
+
+.client-status.inactive {
+  color: #f44336;
 }
 
 .client-actions {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.delete-button {
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 8px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s;
+}
+
+.delete-button:hover {
+  background: #d32f2f;
 }
 
 .modal-overlay {
@@ -350,6 +567,7 @@ h1{
   justify-content: center;
   align-items: center;
   z-index: 999;
+  animation: fadeIn 0.3s ease-in-out;
 }
 
 .error-message {
@@ -393,17 +611,9 @@ h1{
   margin: 0;
 }
 
-.modal-overlay {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .client-card {
@@ -429,8 +639,12 @@ h1{
   }
 
   .button-group {
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: 5px;
+    width: 100%;
+  }
+
+  .search-input {
     width: 100%;
   }
 
@@ -438,6 +652,20 @@ h1{
     grid-template-columns: 1fr;
     padding: 15px;
     gap: 15px;
+  }
+
+  .client-card {
+    flex-direction: column;
+  }
+
+  .client-actions {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .debug-info {
+    margin: 5px;
+    padding: 10px;
   }
 
   .error-message {

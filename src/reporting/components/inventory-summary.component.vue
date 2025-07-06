@@ -90,7 +90,6 @@ export default {
 }
 
 .download-btn {
-  background-color: var(--blue-200);
   border: none;
   padding: 12px 24px;
   font-weight: 600;

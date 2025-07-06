@@ -1,105 +1,16 @@
 <script>
 import DropdownButton from "@shared/components/buttons/DropdownButton.vue";
 import GenericButton from "@shared/components/buttons/GenericButton.vue";
-import {tSales} from "@shared/i18n/i18n.js";
-import {clientService} from "@/sales/services/client.services.js";
-import {ClientAssembler} from "@/sales/services/client.assembler.js";
+import { tSales } from "@shared/i18n/i18n.js";
+import { clientService } from "@/sales/services/client.services.js";
 
 export default {
   name: "ModalAddClient",
   emits: ['close', 'client-added'],
-  methods: {
-    tSales,
-    resetForm(){
-      this.firstname = "";
-      this.lastname = "";
-      this.dni = "";
-      this.email = "";
-      this.phone = "";
-      this.status = "";
-      this.company = "";
-      this.isLoading = false;
-      this.error = null;
-    },
-    async handleSubmit() {
-      try {
-        this.isLoading = true;
-        this.error = null;
+  components: { GenericButton, DropdownButton },
 
-        // Validar campos obligatorios
-        if (!this.firstname || !this.lastname || !this.email || !this.phone) {
-          this.error = "Por favor completa todos los campos obligatorios";
-          return;
-        }
-
-        // Preparar datos según el formato esperado por la API
-        const clientData = {
-          firstName: this.firstname,  // Cambio de first_name a firstName
-          lastName: this.lastname,    // Cambio de last_name a lastName
-          email: this.email,
-          phone: this.phone,
-          // Campos opcionales específicos para tu aplicación
-          dni: this.dni,
-          status: this.status || "Activo",
-          company: this.company || "",
-          // Agregar campos que podrían ser requeridos por la API
-          address: {
-            street: "",
-            city: "",
-            zipcode: ""
-          }
-        };
-
-        console.log('Enviando datos del cliente:', clientData);
-
-        // Llamar al servicio para crear el cliente
-        const response = await clientService.create(clientData);
-
-        console.log('Cliente creado exitosamente:', response);
-
-        // Resetear el formulario
-        this.resetForm();
-
-        // Emitir evento para notificar que se agregó un cliente
-        this.$emit('client-added', response);
-
-        // Cerrar el modal
-        this.closeModal();
-
-      } catch (error) {
-        console.error('Error al crear el cliente:', error);
-
-        // Manejar diferentes tipos de errores
-        if (error.response) {
-          // Error de respuesta del servidor
-          this.error = `Error del servidor: ${error.response.status} - ${error.response.data?.message || 'Error desconocido'}`;
-        } else if (error.request) {
-          // Error de red
-          this.error = 'Error de conexión. Verifica tu conexión a internet.';
-        } else {
-          // Otro tipo de error
-          this.error = error.message || 'Error al crear el cliente. Por favor, intenta nuevamente.';
-        }
-      } finally {
-        this.isLoading = false;
-      }
-    },
-
-    dropDownSelect(label){
-      this.status = label;
-    },
-
-    closeModal() {
-      this.$emit('close');
-    },
-
-    clearError() {
-      this.error = null;
-    }
-  },
-  components: {GenericButton, DropdownButton},
-  data(){
-    return{
+  data() {
+    return {
       firstname: "",
       lastname: "",
       dni: "",
@@ -111,12 +22,97 @@ export default {
       error: null
     }
   },
-  computed:{
+
+  computed: {
     Items() {
       return [
-        { label: "Activo"},
+        { label: "Activo" },
         { label: "Inactivo" },
       ]
+    }
+  },
+
+  methods: {
+    tSales,
+
+    resetForm() {
+      this.firstname = "";
+      this.lastname = "";
+      this.dni = "";
+      this.email = "";
+      this.phone = "";
+      this.status = "";
+      this.company = "";
+      this.isLoading = false;
+      this.error = null;
+    },
+
+    async handleSubmit() {
+      try {
+        this.isLoading = true;
+        this.error = null;
+
+        if (!this.firstname || !this.lastname || !this.email || !this.phone) {
+          this.error = "Por favor completa todos los campos obligatorios";
+          return;
+        }
+
+        const clientData = {
+          firstName: this.firstname,
+          lastName: this.lastname,
+          email: this.email,
+          phone: this.phone,
+          dni: this.dni || "",
+          status: this.status || "Activo",
+          company: this.company || "",
+          address: {
+            street: "",
+            city: "",
+            zipcode: ""
+          }
+        };
+
+        console.log('Enviando datos del cliente a la API:', clientData);
+
+        let createdClient;
+        try {
+          createdClient = await clientService.create(clientData);
+          console.log('Cliente creado en la API:', createdClient);
+        } catch (apiError) {
+          console.error('Error de API, guardando localmente:', apiError);
+          createdClient = {
+            ...clientData,
+            id: 'local_' + Date.now(),
+            registration_date: new Date().toISOString().split('T')[0],
+            created_at: new Date().toISOString(),
+            isLocal: true
+          };
+        }
+
+        this.resetForm();
+
+        this.$emit('client-added', createdClient);
+
+        this.closeModal();
+
+      } catch (error) {
+        console.error('Error al crear el cliente:', error);
+        this.error = error.message || 'Error al crear el cliente. Por favor, intenta nuevamente.';
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    dropDownSelect(label) {
+      this.status = label;
+    },
+
+    closeModal() {
+      this.$emit('close');
+    },
+
+    clearError() {
+      this.error = null;
     }
   }
 }
@@ -139,47 +135,59 @@ export default {
     </div>
 
     <form @submit.prevent="handleSubmit">
-      <input v-model="firstname"
-             type="text"
-             :placeholder="$t('ui.form.placeholder.name')"
-             :disabled="isLoading"
-             required>
+      <input
+          v-model="firstname"
+          type="text"
+          :placeholder="$t('ui.form.placeholder.name')"
+          :disabled="isLoading"
+          required
+      />
 
-      <input v-model="lastname"
-             type="text"
-             :placeholder="$t('ui.form.placeholder.lastname')"
-             :disabled="isLoading"
-             required>
+      <input
+          v-model="lastname"
+          type="text"
+          :placeholder="$t('ui.form.placeholder.lastname')"
+          :disabled="isLoading"
+          required
+      />
 
-      <input v-model="dni"
-             type="text"
-             :placeholder="$t('ui.form.placeholder.dni')"
-             :disabled="isLoading">
+      <input
+          v-model="dni"
+          type="text"
+          :placeholder="$t('ui.form.placeholder.dni')"
+          :disabled="isLoading"
+      />
 
-      <input v-model="email"
-             type="email"
-             :placeholder="$t('ui.form.placeholder.mail')"
-             :disabled="isLoading"
-             required>
+      <input
+          v-model="email"
+          type="email"
+          :placeholder="$t('ui.form.placeholder.mail')"
+          :disabled="isLoading"
+          required
+      />
 
-      <input v-model="phone"
-             type="tel"
-             :placeholder="$t('ui.form.placeholder.phone')"
-             :disabled="isLoading"
-             required>
+      <input
+          v-model="phone"
+          type="tel"
+          :placeholder="$t('ui.form.placeholder.phone')"
+          :disabled="isLoading"
+          required
+      />
 
       <DropdownButton
           v-model="status"
           :items="Items"
           :disabled="isLoading"
           @select="dropDownSelect">
-        {{$t('ui.form.placeholder.status')}}
+        {{ $t('ui.form.placeholder.status') }}
       </DropdownButton>
 
-      <input v-model="company"
-             type="text"
-             :placeholder="$t('ui.form.placeholder.company')"
-             :disabled="isLoading">
+      <input
+          v-model="company"
+          type="text"
+          :placeholder="$t('ui.form.placeholder.company')"
+          :disabled="isLoading"
+      />
 
       <GenericButton
           type="submit"
@@ -211,7 +219,7 @@ export default {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.btn-close{
+.btn-close {
   position: absolute;
   top: 20px;
   right: 20px;

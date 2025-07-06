@@ -1,8 +1,8 @@
-import {ClientEntity} from "@/sales/model/client.entity.js";
+import { ClientEntity } from "@/sales/model/client.entity.js"
 
-export class ClientAssembler{
+export class ClientAssembler {
     static toClient(resource) {
-        const data = resource.data || resource;
+        const data = resource.data || resource
 
         return new ClientEntity(
             data.id,
@@ -15,7 +15,7 @@ export class ClientAssembler{
             data.status,
             data.company,
             data.createdAt || data.created_at,
-        );
+        )
     }
 
     static toClientForm(resource) {
@@ -30,18 +30,24 @@ export class ClientAssembler{
             resource.status,
             resource.company,
             resource.createdAt || resource.created_at,
-        );
+        )
     }
 
     static toEntityFromResponse(response) {
         if (response.data && Array.isArray(response.data)) {
-            return response.data.map(resource => this.toClientForm(resource));
+            return response.data.map((resource) => this.toClientForm(resource))
         } else if (Array.isArray(response)) {
-            return response.map(resource => this.toClientForm(resource));
+            return response.map((resource) => this.toClientForm(resource))
         } else {
-            console.warn('Estructura de respuesta no esperada:', response);
-            return [];
+            console.warn("Estructura de respuesta no esperada:", response)
+            return []
         }
+    }
+
+    static toEntitiesFromApiResponse(apiData) {
+        if (!apiData) return []
+
+        return apiData.map((resource) => this.toClientForm(resource))
     }
 
     static fromFormData(formData) {
@@ -57,13 +63,13 @@ export class ClientAssembler{
             address: formData.address || {
                 street: "",
                 city: "",
-                zipcode: ""
-            }
-        };
+                zipcode: "",
+            },
+        }
     }
 
     static toClientFromCreateResponse(response) {
-        const data = response.data || response;
+        const data = response.data || response
 
         return new ClientEntity(
             data.id,
@@ -76,10 +82,9 @@ export class ClientAssembler{
             data.status,
             data.company,
             data.createdAt || data.created_at,
-        );
+        )
     }
 
-    // Método para simular una respuesta exitosa (útil para testing)
     static createMockResponse(formData) {
         return {
             id: Date.now(), // ID temporal simulado
@@ -91,7 +96,7 @@ export class ClientAssembler{
             status: formData.status || "Activo",
             company: formData.company || "",
             registrationDate: new Date().toISOString(),
-            createdAt: new Date().toISOString()
-        };
+            createdAt: new Date().toISOString(),
+        }
     }
 }
