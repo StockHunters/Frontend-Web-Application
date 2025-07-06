@@ -7,3 +7,9 @@ export class UserService extends ApiService {
 }
 
 export const userService = new UserService();
+
+export class ActualUserService extends ApiService {
+    constructor() {
+        super('authorization/sign-in');
+    }
+}
