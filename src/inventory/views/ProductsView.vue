@@ -66,7 +66,7 @@ export default {
     },
 
     async testApiConnection() {
-      console.log(' Probando conexión a tu fake API...');
+      console.log(' Probando conexión a la fake API...');
       this.connectionTested = true;
 
       try {
@@ -334,7 +334,7 @@ export default {
     </div>
 
   <div v-if="isLoading" class="loading-container">
-    <p>Cargando datos desde tu fake API...</p>
+    <p>Cargando datos...</p>
   </div>
 
   <div v-else class="products-container">

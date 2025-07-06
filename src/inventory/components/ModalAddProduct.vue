@@ -67,7 +67,6 @@ export default {
           return;
         }
 
-        // Preparar datos del producto para la API
         const productData = {
           name: this.name,
           description: this.description,
@@ -76,20 +75,17 @@ export default {
           category: this.category || "Sin categoría",
           batch: this.batch || "",
           image_url: this.image_url || "",
-          // Campos adicionales que puede esperar la fake API
           stock_by_location: null
         };
 
         console.log('Enviando datos del producto a la API:', productData);
 
-        // Intentar crear en la API
         let createdProduct;
         try {
           createdProduct = await productApiService.createProduct(productData);
           console.log('Producto creado en la API:', createdProduct);
         } catch (apiError) {
           console.error('Error de API, guardando localmente:', apiError);
-          // Si falla la API, crear producto local
           createdProduct = {
             ...productData,
             id: 'local_' + Date.now(),
@@ -98,13 +94,10 @@ export default {
           };
         }
 
-        // Resetear el formulario
         this.resetForm();
 
-        // Emitir evento para notificar que se agregó un producto
         this.$emit('product-added', createdProduct);
 
-        // Cerrar el modal
         this.closeModal();
 
       } catch (error) {
