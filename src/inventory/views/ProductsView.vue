@@ -14,6 +14,8 @@ export default {
       products: [],
       localProducts: [],
       showModal: false,
+      showDetailModal: false,
+      selectedProduct: null,
       isLoading: false,
       error: null,
       searchQuery: '',
@@ -66,7 +68,7 @@ export default {
     },
 
     async testApiConnection() {
-      console.log(' Probando conexión a la fake API...');
+      console.log('🔍 Probando conexión a la fake API...');
       this.connectionTested = true;
 
       try {
@@ -100,7 +102,7 @@ export default {
 
         this.loadLocalProducts();
 
-          const isConnected = await this.testApiConnection();
+        const isConnected = await this.testApiConnection();
 
         if (isConnected) {
           try {
@@ -184,6 +186,17 @@ export default {
 
     closeModal() {
       this.showModal = false;
+    },
+
+    openProductDetails(product) {
+      console.log('Abriendo detalles del producto:', product.name);
+      this.selectedProduct = product;
+      this.showDetailModal = true;
+    },
+
+    closeProductDetails() {
+      this.showDetailModal = false;
+      this.selectedProduct = null;
     },
 
     async handleProductAdded(newProduct) {
@@ -327,11 +340,11 @@ export default {
     </GenericButton>
   </div>
 
-    <div class="quick-summary">
-      <p v-if="productPrices.length"><strong>Precios:</strong> {{ productPrices.length }}</p>
-      <p v-if="productSuppliers.length"><strong>Proveedores:</strong> {{ productSuppliers.length }}</p>
-      <p v-if="productLocations.length"><strong>Ubicaciones:</strong> {{ productLocations.length }}</p>
-    </div>
+  <div class="quick-summary">
+    <p v-if="productPrices.length"><strong>Precios:</strong> {{ productPrices.length }}</p>
+    <p v-if="productSuppliers.length"><strong>Proveedores:</strong> {{ productSuppliers.length }}</p>
+    <p v-if="productLocations.length"><strong>Ubicaciones:</strong> {{ productLocations.length }}</p>
+  </div>
 
   <div v-if="isLoading" class="loading-container">
     <p>Cargando datos...</p>
@@ -387,6 +400,7 @@ export default {
         <GenericButton
             link=""
             variant="color"
+            @click="openProductDetails(product)"
         >
           Ver más
         </GenericButton>
@@ -405,12 +419,99 @@ export default {
     </div>
   </div>
 
+  <!-- Modal para agregar producto -->
   <div v-if="showModal" class="modal-overlay" @click="closeModal">
     <div @click.stop>
       <ModalAddProduct
           @close="closeModal"
           @product-added="handleProductAdded"
       />
+    </div>
+  </div>
+
+  <div v-if="showDetailModal && selectedProduct" class="modal-overlay" @click="closeProductDetails">
+    <div class="product-detail-modal" @click.stop>
+      <GenericButton
+          custom-class="btn-close"
+          link=""
+          icon="close"
+          @click="closeProductDetails"
+      />
+
+      <div class="detail-header">
+        <div class="detail-image-container">
+          <img
+              v-if="selectedProduct.image_url"
+              :src="selectedProduct.image_url"
+              :alt="selectedProduct.name"
+              class="detail-image"
+          />
+          <div v-else class="detail-image-placeholder">
+            📦
+          </div>
+        </div>
+
+        <div class="detail-title">
+          <h2>{{ selectedProduct.name }}</h2>
+          <div class="detail-badges">
+            <span :class="['stock-badge', selectedProduct.stockStatus.class]">
+              {{ selectedProduct.stockStatus.label }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-content">
+        <div class="detail-section">
+          <h3>📝 Descripción</h3>
+          <p>{{ selectedProduct.description || 'Sin descripción disponible' }}</p>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">💰 Precio:</span>
+            <span class="detail-value price">{{ selectedProduct.formattedPrice }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">📦 Stock:</span>
+            <span class="detail-value" :class="selectedProduct.stockStatus.class">
+              {{ selectedProduct.stock }} unidades
+            </span>
+          </div>
+
+          <div class="detail-item" v-if="selectedProduct.category">
+            <span class="detail-label">🏷️ Categoría:</span>
+            <span class="detail-value">{{ selectedProduct.category }}</span>
+          </div>
+
+          <div class="detail-item" v-if="selectedProduct.batch">
+            <span class="detail-label">📋 Lote:</span>
+            <span class="detail-value">{{ selectedProduct.batch }}</span>
+          </div>
+
+          <div class="detail-item" v-if="selectedProduct.created_at">
+            <span class="detail-label">📅 Creado:</span>
+            <span class="detail-value">{{ new Date(selectedProduct.created_at).toLocaleDateString() }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">🆔 ID:</span>
+            <span class="detail-value">{{ selectedProduct.id }}</span>
+          </div>
+        </div>
+
+        <div class="detail-actions">
+          <GenericButton
+              link=""
+              variant="secondary"
+              @click="closeProductDetails"
+          >
+            Cerrar
+          </GenericButton>
+
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -453,92 +554,6 @@ export default {
 
 h1 {
   color: var(--text-color);
-}
-
-.debug-info {
-  background: var(--bg-secondary-color);
-  padding: 15px;
-  margin: 10px;
-  border-radius: 5px;
-  font-size: 13px;
-  color: var(--text-color);
-  border-left: 4px solid var(--primary-color);
-}
-
-.debug-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.debug-header h4 {
-  margin: 0;
-  color: var(--primary-color);
-}
-
-.toggle-button {
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.toggle-button:hover {
-  opacity: 0.8;
-}
-
-.api-endpoints {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 15px;
-  margin: 15px 0;
-}
-
-.endpoint-info {
-  background: var(--bg-primary-color);
-  padding: 10px;
-  border-radius: 4px;
-  border: 1px solid var(--border-color);
-}
-
-.endpoint-info h5 {
-  margin: 0 0 8px 0;
-  color: var(--primary-color);
-  font-size: 14px;
-}
-
-.endpoint-info p {
-  margin: 3px 0;
-  font-size: 12px;
-}
-
-.endpoint-info pre {
-  background: var(--bg-secondary-color);
-  padding: 8px;
-  border-radius: 4px;
-  overflow-x: auto;
-  font-size: 10px;
-  max-height: 150px;
-  overflow-y: auto;
-}
-
-.endpoint-info details {
-  margin-top: 8px;
-}
-
-.endpoint-info summary {
-  cursor: pointer;
-  font-weight: bold;
-  color: var(--primary-color);
-  font-size: 11px;
-}
-
-.error-text {
-  color: #f44336 !important;
 }
 
 .quick-summary {
@@ -772,6 +787,152 @@ h1 {
   margin: 0;
 }
 
+/* ✅ NUEVOS ESTILOS: Modal de detalles del producto */
+.product-detail-modal {
+  background-color: var(--bg-secondary-color);
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  color: var(--text-color);
+}
+
+.btn-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 1;
+}
+
+.detail-header {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+  align-items: flex-start;
+}
+
+.detail-image-container {
+  flex-shrink: 0;
+}
+
+.detail-image,
+.detail-image-placeholder {
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.detail-image-placeholder {
+  background-color: var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+}
+
+.detail-title {
+  flex: 1;
+}
+
+.detail-title h2 {
+  margin: 0 0 15px 0;
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.detail-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.stock-badge {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.stock-badge.in-stock {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.stock-badge.low-stock {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.stock-badge.out-of-stock {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.detail-section h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.detail-section p {
+  margin: 0;
+  line-height: 1.6;
+  color: var(--text-color);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: var(--bg-primary-color);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.detail-label {
+  font-weight: 500;
+  color: var(--text-color);
+  opacity: 0.8;
+}
+
+.detail-value {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.detail-value.price {
+  color: #4CAF50;
+  font-size: 18px;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -824,13 +985,22 @@ h1 {
     justify-content: space-between;
   }
 
-  .debug-info {
-    margin: 5px;
-    padding: 10px;
+  .product-detail-modal {
+    width: 95%;
+    padding: 20px;
   }
 
-  .api-endpoints {
+  .detail-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .detail-grid {
     grid-template-columns: 1fr;
+  }
+
+  .detail-actions {
+    flex-direction: column;
   }
 }
 </style>

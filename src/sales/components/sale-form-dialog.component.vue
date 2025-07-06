@@ -5,7 +5,7 @@ import { SaleApiService } from "@/sales/services/sale-api.service.js";
 export default {
   name: "sale-form-dialog",
   components: {},
-  props: ["modelValue"], // Controla la visibilidad del Dialog desde el padre
+  props: ["modelValue"],
   emits: ["update:modelValue", "refresh"],
   data() {
     return {
@@ -26,7 +26,7 @@ export default {
         await apiService.create(this.sale.toJson());
 
         alert('✅ Venta registrada correctamente');
-        this.$emit("refresh"); // Notifica al padre para recargar la lista
+        this.$emit("refresh");
         this.closeDialog();
       } catch (error) {
         console.error(error);
@@ -40,8 +40,8 @@ export default {
       return date && product_id && quantity && status && customer_id;
     },
     closeDialog() {
-      this.$emit("update:modelValue", false); // Cierra el Dialog
-      this.sale = Sale.createEmpty(); // Limpia el formulario
+      this.$emit("update:modelValue", false);
+      this.sale = Sale.createEmpty();
     }
   }
 };

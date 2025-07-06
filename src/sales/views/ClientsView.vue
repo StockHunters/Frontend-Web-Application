@@ -17,6 +17,8 @@ export default {
       clients: [],
       localClients: [],
       showModal: false,
+      showDetailModal: false,
+      selectedClient: null,
       isLoading: false,
       error: null,
       searchQuery: '',
@@ -145,6 +147,17 @@ export default {
       this.showModal = false;
     },
 
+    openClientDetails(client) {
+      console.log('👁️ Abriendo detalles del cliente:', client.clientFullName);
+      this.selectedClient = client;
+      this.showDetailModal = true;
+    },
+
+    closeClientDetails() {
+      this.showDetailModal = false;
+      this.selectedClient = null;
+    },
+
     async handleClientAdded(newClient) {
       console.log('=== CLIENTE AÑADIDO ===');
       console.log('Datos recibidos:', newClient);
@@ -247,8 +260,6 @@ export default {
           class="search-input"
       />
 
-
-
       <GenericButton
           link=""
           variant="secondary"
@@ -284,7 +295,6 @@ export default {
       Cerrar
     </GenericButton>
   </div>
-
 
   <div v-if="isLoading" class="loading-container">
     <p>Cargando datos...</p>
@@ -326,8 +336,9 @@ export default {
         <GenericButton
             link=""
             variant="color"
+            @click="openClientDetails(client)"
         >
-          {{ $t('ui.button.more') }}
+          Ver más
         </GenericButton>
       </div>
     </div>
@@ -344,13 +355,102 @@ export default {
     </div>
   </div>
 
-  <!-- Modal con overlay -->
+  <!-- Modal para agregar cliente -->
   <div v-if="showModal" class="modal-overlay" @click="closeModal">
     <div @click.stop>
       <ModalAddClient
           @close="closeModal"
           @client-added="handleClientAdded"
       />
+    </div>
+  </div>
+
+  <div v-if="showDetailModal && selectedClient" class="modal-overlay" @click="closeClientDetails">
+    <div class="client-detail-modal" @click.stop>
+      <GenericButton
+          custom-class="btn-close"
+          link=""
+          icon="close"
+          @click="closeClientDetails"
+      />
+
+      <div class="detail-header">
+        <div class="detail-avatar">
+          <div class="avatar-placeholder">
+            {{ selectedClient.firstName.charAt(0) }}{{ selectedClient.lastName.charAt(0) }}
+          </div>
+        </div>
+
+        <div class="detail-title">
+          <h2>{{ selectedClient.clientFullName }}</h2>
+          <div class="detail-badges">
+            <span :class="['status-badge', selectedClient.isActive ? 'active' : 'inactive']">
+              {{ selectedClient.formattedStatus }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-content">
+        <div class="detail-section">
+          <h3><span class="detail-label">📧 Información de Contacto</span></h3>
+          <div class="contact-grid">
+            <div class="contact-item">
+              <span class="contact-label">Email: </span>
+              <span class="detail-value">{{ selectedClient.email }}</span>
+            </div>
+            <div class="contact-item" v-if="selectedClient.phone">
+              <span class="contact-label">Teléfono:</span>
+              <span class="detail-value">{{ selectedClient.phone }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-item" v-if="selectedClient.dni">
+            <span class="detail-label">🆔 DNI:</span>
+            <span class="detail-value">{{ selectedClient.dni }}</span>
+          </div>
+
+          <div class="detail-item" v-if="selectedClient.company">
+            <span class="detail-label">🏢 Empresa:</span>
+            <span class="detail-value">{{ selectedClient.company }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">📊 Estado:</span>
+            <span class="detail-value" :class="selectedClient.isActive ? 'active' : 'inactive'">
+              {{ selectedClient.formattedStatus }}
+            </span>
+          </div>
+
+          <div class="detail-item" v-if="selectedClient.registration_date">
+            <span class="detail-label">📅 Fecha de Registro:</span>
+            <span class="detail-value">{{ new Date(selectedClient.registration_date).toLocaleDateString() }}</span>
+          </div>
+
+          <div class="detail-item" v-if="selectedClient.created_at">
+            <span class="detail-label">🕒 Creado:</span>
+            <span class="detail-value">{{ new Date(selectedClient.created_at).toLocaleDateString() }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">🆔 ID:</span>
+            <span class="detail-value">{{ selectedClient.id }}</span>
+          </div>
+        </div>
+
+        <div class="detail-actions">
+          <GenericButton
+              link=""
+              variant="secondary"
+              @click="closeClientDetails"
+          >
+            Cerrar
+          </GenericButton>
+
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -393,45 +493,6 @@ export default {
 
 h1 {
   color: var(--text-color);
-}
-
-.debug-info {
-  background: var(--bg-secondary-color);
-  padding: 15px;
-  margin: 10px;
-  border-radius: 5px;
-  font-size: 13px;
-  color: var(--text-color);
-  border-left: 4px solid var(--primary-color);
-}
-
-.debug-info h4 {
-  margin: 0 0 10px 0;
-  color: var(--primary-color);
-}
-
-.debug-info p {
-  margin: 5px 0;
-}
-
-.debug-info pre {
-  background: var(--bg-primary-color);
-  padding: 10px;
-  border-radius: 4px;
-  overflow-x: auto;
-  font-size: 11px;
-  max-height: 200px;
-  overflow-y: auto;
-}
-
-.debug-info details {
-  margin-top: 10px;
-}
-
-.debug-info summary {
-  cursor: pointer;
-  font-weight: bold;
-  color: var(--primary-color);
 }
 
 .clients-container {
@@ -611,6 +672,169 @@ h1 {
   margin: 0;
 }
 
+/* ✅ NUEVOS ESTILOS: Modal de detalles del cliente */
+.client-detail-modal {
+  background-color: var(--bg-secondary-color);
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  color: var(--text-color);
+}
+
+.btn-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 1;
+}
+
+.detail-header {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+  align-items: flex-start;
+}
+
+.detail-avatar {
+  flex-shrink: 0;
+}
+
+.avatar-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), #6366f1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+  text-transform: uppercase;
+}
+
+.detail-title {
+  flex: 1;
+}
+
+.detail-title h2 {
+  margin: 0 0 15px 0;
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.detail-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.status-badge {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.status-badge.active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.detail-section h3 {
+  margin: 0 0 15px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.contact-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: var(--bg-primary-color);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.contact-label {
+  font-weight: 500;
+  color: var(--text-color);
+  opacity: 0.8;
+}
+
+.contact-value {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: var(--bg-primary-color);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.detail-label {
+  font-weight: 500;
+  color: var(--text-color);
+  opacity: 0.8;
+}
+
+.detail-value {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.detail-value.active {
+  color: #4CAF50;
+}
+
+.detail-value.inactive {
+  color: #f44336;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -663,15 +887,23 @@ h1 {
     justify-content: space-between;
   }
 
-  .debug-info {
-    margin: 5px;
-    padding: 10px;
+  .client-detail-modal {
+    width: 95%;
+    padding: 20px;
   }
 
-  .error-message {
+  .detail-header {
     flex-direction: column;
-    gap: 10px;
-    align-items: flex-start;
+    text-align: center;
+  }
+
+  .contact-grid,
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-actions {
+    flex-direction: column;
   }
 }
 </style>
