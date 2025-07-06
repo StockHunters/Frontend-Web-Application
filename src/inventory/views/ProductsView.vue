@@ -2,7 +2,6 @@
 import GenericButton from "@shared/components/buttons/GenericButton.vue";
 import { tInventory } from "@shared/i18n/i18n.js";
 import { productApiService } from "@/inventory/services/product-api.service.js";
-import { ProductAssembler } from "@/inventory/services/product.assembler.js";
 import ModalAddProduct from "@/inventory/components/ModalAddProduct.vue";
 import { Product } from "@/inventory/models/product.entity.js";
 
@@ -17,7 +16,14 @@ export default {
       showModal: false,
       isLoading: false,
       error: null,
-      searchQuery: ''
+      searchQuery: '',
+      apiConnected: false,
+      connectionTested: false,
+      apiInfo: null,
+      productPrices: [],
+      productSuppliers: [],
+      productLocations: [],
+      showAllData: false
     }
   },
 
@@ -45,9 +51,9 @@ export default {
               p.id, p.name, p.description, p.price, p.stock,
               p.category, p.image_url, p.batch, p.created_at, p.stock_by_location
           ));
-          console.log('Productos locales cargados:', this.localProducts);
+          console.log('📦 Productos locales cargados:', this.localProducts.length);
         } catch (error) {
-          console.error('Error al cargar productos locales:', error);
+          console.error('❌ Error al cargar productos locales:', error);
           this.localProducts = [];
         }
       }
@@ -56,7 +62,35 @@ export default {
     saveLocalProducts() {
       const productsToSave = this.localProducts.map(p => p.toJson());
       localStorage.setItem('local_products', JSON.stringify(productsToSave));
-      console.log('Productos locales guardados:', this.localProducts);
+      console.log('💾 Productos locales guardados:', this.localProducts.length);
+    },
+
+    async testApiConnection() {
+      console.log(' Probando conexión a tu fake API...');
+      this.connectionTested = true;
+
+      try {
+        this.apiInfo = await productApiService.getApiInfo();
+        console.log('📊 Información completa de tu API:', this.apiInfo);
+
+        const isConnected = await productApiService.testConnection();
+        this.apiConnected = isConnected;
+
+        if (isConnected) {
+          console.log('✅ Tu fake API está funcionando correctamente');
+          this.error = null;
+        } else {
+          console.log('❌ No se pudo conectar a tu fake API');
+          this.error = "No se pudo conectar a tu fake API. Usando modo local.";
+        }
+
+        return isConnected;
+      } catch (error) {
+        console.error('❌ Error al probar conexión:', error);
+        this.apiConnected = false;
+        this.error = `Error de conexión: ${error.message}`;
+        return false;
+      }
     },
 
     async fetchProducts() {
@@ -66,28 +100,79 @@ export default {
 
         this.loadLocalProducts();
 
-        let apiProducts = [];
-        try {
-          const response = await productApiService.getProducts();
-          apiProducts = response.map(p => new Product(
-              p.id, p.name, p.description, p.price, p.stock,
-              p.category, p.image_url, p.batch, p.created_at, p.stock_by_location
-          ));
-        } catch (apiError) {
-          console.warn('No se pudieron cargar productos de la API:', apiError);
+          const isConnected = await this.testApiConnection();
+
+        if (isConnected) {
+          try {
+            console.log('🔄 Obteniendo productos de tu fake API...');
+            const apiProducts = await productApiService.getProducts();
+
+            this.products = apiProducts.map(p => new Product(
+                p.id, p.name, p.description, p.price, p.stock,
+                p.category, p.image_url, p.batch, p.created_at, p.stock_by_location
+            ));
+
+            this.products = [...this.products, ...this.localProducts];
+
+            console.log('✅ Productos cargados desde tu API:', apiProducts.length);
+            console.log('📦 Productos locales agregados:', this.localProducts.length);
+
+          } catch (apiError) {
+            console.warn('❌ Error al obtener productos de tu API:', apiError);
+            this.apiConnected = false;
+            this.products = this.localProducts;
+            this.error = `Error al cargar productos de tu API: ${apiError.message}`;
+          }
+        } else {
+          this.products = this.localProducts;
+          this.error = "Sin conexión a tu fake API. Mostrando productos guardados localmente.";
         }
 
-        this.products = [...apiProducts, ...this.localProducts];
-
-        console.log('Productos API:', apiProducts.length);
-        console.log('Productos locales:', this.localProducts.length);
-        console.log('Total productos mostrados:', this.products.length);
+        console.log('📊 Total productos mostrados:', this.products.length);
 
       } catch (error) {
-        console.error("Error fetching products:", error);
-        this.error = "Error al cargar los productos";
-        this.loadLocalProducts();
+        console.error("❌ Error general:", error);
+        this.error = `Error al cargar productos: ${error.message}`;
+        this.apiConnected = false;
         this.products = this.localProducts;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    async fetchAllData() {
+      try {
+        this.isLoading = true;
+        console.log('🔄 Cargando todos los datos de tu API...');
+
+        const allData = await productApiService.getAllData();
+
+        this.products = allData.products.map(p => new Product(
+            p.id, p.name, p.description, p.price, p.stock,
+            p.category, p.image_url, p.batch, p.created_at, p.stock_by_location
+        ));
+
+        this.productPrices = allData.prices;
+        this.productSuppliers = allData.suppliers;
+        this.productLocations = allData.locations;
+
+        this.products = [...this.products, ...this.localProducts];
+
+        console.log('✅ Todos los datos cargados:', {
+          products: allData.products.length,
+          prices: allData.prices.length,
+          suppliers: allData.suppliers.length,
+          locations: allData.locations.length
+        });
+
+        const errors = Object.values(allData.errors).filter(e => e !== null);
+        if (errors.length > 0) {
+          console.warn('⚠️ Algunos endpoints tuvieron errores:', allData.errors);
+        }
+
+      } catch (error) {
+        console.error('❌ Error al cargar todos los datos:', error);
+        this.error = `Error al cargar datos: ${error.message}`;
       } finally {
         this.isLoading = false;
       }
@@ -101,44 +186,38 @@ export default {
       this.showModal = false;
     },
 
-    async handleProductAdded(newProductData) {
+    async handleProductAdded(newProduct) {
       console.log('=== PRODUCTO AÑADIDO ===');
-      console.log('Datos recibidos:', newProductData);
+      console.log('Datos recibidos:', newProduct);
 
-      const localProduct = new Product(
-          'local_' + Date.now(),
-          newProductData.name,
-          newProductData.description,
-          newProductData.price,
-          newProductData.stock,
-          newProductData.category,
-          newProductData.image_url,
-          newProductData.batch,
-          newProductData.created_at
+      const productEntity = new Product(
+          newProduct.id,
+          newProduct.name,
+          newProduct.description,
+          newProduct.price,
+          newProduct.stock,
+          newProduct.category,
+          newProduct.image_url,
+          newProduct.batch,
+          newProduct.created_at,
+          newProduct.stock_by_location
       );
 
-      // Marcar como producto local
-      localProduct.isLocal = true;
+      if (newProduct.isLocal) {
+        productEntity.isLocal = true;
+        this.localProducts.push(productEntity);
+        this.saveLocalProducts();
+      }
 
-      console.log('Producto local creado:', localProduct);
-
-      this.localProducts.push(localProduct);
-      this.saveLocalProducts();
-      this.products.push(localProduct);
-
+      this.products.unshift(productEntity);
       this.closeModal();
 
-      console.log('✅ Producto añadido exitosamente a la lista');
-      console.log('Productos totales ahora:', this.products.length);
+      console.log('✅ Producto añadido exitosamente');
     },
 
     async refreshProducts() {
+      console.log('🔄 Refrescando productos desde tu API...');
       await this.fetchProducts();
-    },
-
-    handleError(error) {
-      console.error("Error:", error);
-      this.error = error.message || "Ha ocurrido un error";
     },
 
     clearError() {
@@ -149,18 +228,49 @@ export default {
       this.localProducts = [];
       localStorage.removeItem('local_products');
       this.fetchProducts();
-      console.log('Productos locales eliminados');
+      console.log('🗑️ Productos locales eliminados');
     },
 
-    deleteProduct(productId) {
-      if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-        this.localProducts = this.localProducts.filter(p => p.id !== productId);
-        this.saveLocalProducts();
+    async deleteProduct(productId) {
+      if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+        return;
+      }
+
+      try {
+        if (this.apiConnected && !productId.toString().startsWith('local_')) {
+          console.log('🗑️ Eliminando producto de tu API:', productId);
+          await productApiService.deleteProduct(productId);
+          console.log('✅ Producto eliminado de tu API');
+        } else {
+          console.log('🗑️ Eliminando producto local:', productId);
+          this.localProducts = this.localProducts.filter(p => p.id !== productId);
+          this.saveLocalProducts();
+        }
 
         this.products = this.products.filter(p => p.id !== productId);
+        console.log('✅ Producto eliminado exitosamente');
 
-        console.log('Producto eliminado:', productId);
+      } catch (error) {
+        console.error('❌ Error al eliminar producto:', error);
+        this.error = 'Error al eliminar el producto. Intenta nuevamente.';
       }
+    },
+
+    getConnectionStatus() {
+      if (!this.connectionTested) return '⏳ Conectando...';
+      return this.apiConnected ? '🟢' : '🔴';
+    },
+
+    async forceApiTest() {
+      console.log('🔧 Forzando prueba de tu fake API...');
+      await this.testApiConnection();
+      if (this.apiConnected) {
+        await this.fetchProducts();
+      }
+    },
+
+    toggleAllData() {
+      this.showAllData = !this.showAllData;
     }
   },
 
@@ -172,7 +282,7 @@ export default {
 
 <template>
   <div class="title-container">
-    <h1>Products</h1>
+    <h1>Products <span class="connection-status">{{ getConnectionStatus() }}</span></h1>
     <div class="button-group">
       <input
           v-model="searchQuery"
@@ -180,6 +290,15 @@ export default {
           placeholder="Buscar productos..."
           class="search-input"
       />
+
+      <GenericButton
+          link=""
+          variant="secondary"
+          @click="refreshProducts"
+          :disabled="isLoading"
+      >
+        🔄 {{ isLoading ? 'Cargando...' : 'Actualizar' }}
+      </GenericButton>
 
       <GenericButton
           link=""
@@ -208,8 +327,14 @@ export default {
     </GenericButton>
   </div>
 
+    <div class="quick-summary">
+      <p v-if="productPrices.length"><strong>Precios:</strong> {{ productPrices.length }}</p>
+      <p v-if="productSuppliers.length"><strong>Proveedores:</strong> {{ productSuppliers.length }}</p>
+      <p v-if="productLocations.length"><strong>Ubicaciones:</strong> {{ productLocations.length }}</p>
+    </div>
+
   <div v-if="isLoading" class="loading-container">
-    <p>Cargando productos...</p>
+    <p>Cargando datos desde tu fake API...</p>
   </div>
 
   <div v-else class="products-container">
@@ -217,7 +342,12 @@ export default {
         v-for="product in filteredProducts"
         :key="product.id"
         class="product-card"
-        :class="{ 'local-product': product.isLocal, 'low-stock': product.isLowStock, 'out-of-stock': product.isOutOfStock }"
+        :class="{
+          'local-product': product.isLocal,
+          'api-product': !product.isLocal && apiConnected,
+          'low-stock': product.isLowStock,
+          'out-of-stock': product.isOutOfStock
+        }"
     >
       <div class="product-image-container">
         <img
@@ -247,7 +377,6 @@ export default {
 
       <div class="product-actions">
         <button
-            v-if="product.isLocal"
             @click="deleteProduct(product.id)"
             class="delete-button"
             title="Eliminar producto"
@@ -264,7 +393,6 @@ export default {
       </div>
     </div>
 
-    <!-- Mensaje cuando no hay productos -->
     <div v-if="filteredProducts.length === 0 && !isLoading" class="no-products">
       <p>{{ searchQuery ? 'No se encontraron productos' : 'No hay productos registrados' }}</p>
       <GenericButton
@@ -277,7 +405,6 @@ export default {
     </div>
   </div>
 
-  <!-- Modal con overlay -->
   <div v-if="showModal" class="modal-overlay" @click="closeModal">
     <div @click.stop>
       <ModalAddProduct
@@ -296,6 +423,12 @@ export default {
   align-items: center;
   border-bottom: var(--primary-color) 1px solid;
   padding: 10px;
+}
+
+.connection-status {
+  font-size: 14px;
+  font-weight: normal;
+  margin-left: 10px;
 }
 
 .button-group {
@@ -320,6 +453,105 @@ export default {
 
 h1 {
   color: var(--text-color);
+}
+
+.debug-info {
+  background: var(--bg-secondary-color);
+  padding: 15px;
+  margin: 10px;
+  border-radius: 5px;
+  font-size: 13px;
+  color: var(--text-color);
+  border-left: 4px solid var(--primary-color);
+}
+
+.debug-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.debug-header h4 {
+  margin: 0;
+  color: var(--primary-color);
+}
+
+.toggle-button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.toggle-button:hover {
+  opacity: 0.8;
+}
+
+.api-endpoints {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 15px;
+  margin: 15px 0;
+}
+
+.endpoint-info {
+  background: var(--bg-primary-color);
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+.endpoint-info h5 {
+  margin: 0 0 8px 0;
+  color: var(--primary-color);
+  font-size: 14px;
+}
+
+.endpoint-info p {
+  margin: 3px 0;
+  font-size: 12px;
+}
+
+.endpoint-info pre {
+  background: var(--bg-secondary-color);
+  padding: 8px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 10px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.endpoint-info details {
+  margin-top: 8px;
+}
+
+.endpoint-info summary {
+  cursor: pointer;
+  font-weight: bold;
+  color: var(--primary-color);
+  font-size: 11px;
+}
+
+.error-text {
+  color: #f44336 !important;
+}
+
+.quick-summary {
+  background: var(--bg-primary-color);
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  margin-top: 10px;
+}
+
+.quick-summary p {
+  margin: 3px 0;
+  font-weight: 500;
 }
 
 .products-container {
@@ -348,6 +580,11 @@ h1 {
 .local-product {
   border: 2px solid #4CAF50;
   background: linear-gradient(135deg, var(--bg-secondary-color) 0%, rgba(76, 175, 80, 0.1) 100%);
+}
+
+.api-product {
+  border: 2px solid #2196F3;
+  background: linear-gradient(135deg, var(--bg-secondary-color) 0%, rgba(33, 150, 243, 0.1) 100%);
 }
 
 .low-stock {
@@ -395,7 +632,16 @@ h1 {
 
 .local-badge {
   font-size: 12px;
-  background: #1e3a8a;
+  background: #4CAF50;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-weight: normal;
+}
+
+.api-badge {
+  font-size: 12px;
+  background: #2196F3;
   color: white;
   padding: 2px 6px;
   border-radius: 12px;
@@ -554,7 +800,7 @@ h1 {
   }
 
   .button-group {
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: 5px;
     width: 100%;
   }
@@ -576,6 +822,15 @@ h1 {
   .product-actions {
     flex-direction: row;
     justify-content: space-between;
+  }
+
+  .debug-info {
+    margin: 5px;
+    padding: 10px;
+  }
+
+  .api-endpoints {
+    grid-template-columns: 1fr;
   }
 }
 </style>

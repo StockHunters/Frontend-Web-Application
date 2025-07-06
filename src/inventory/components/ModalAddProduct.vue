@@ -2,6 +2,7 @@
 import GenericButton from "@shared/components/buttons/GenericButton.vue";
 import DropdownButton from "@shared/components/buttons/DropdownButton.vue";
 import { tInventory } from "@shared/i18n/i18n.js";
+import { productApiService } from "@/inventory/services/product-api.service.js";
 
 export default {
   name: "ModalAddProduct",
@@ -66,7 +67,7 @@ export default {
           return;
         }
 
-        // Preparar datos del producto
+        // Preparar datos del producto para la API
         const productData = {
           name: this.name,
           description: this.description,
@@ -75,16 +76,33 @@ export default {
           category: this.category || "Sin categoría",
           batch: this.batch || "",
           image_url: this.image_url || "",
-          created_at: new Date().toISOString()
+          // Campos adicionales que puede esperar la fake API
+          stock_by_location: null
         };
 
-        console.log('Enviando datos del producto:', productData);
+        console.log('Enviando datos del producto a la API:', productData);
+
+        // Intentar crear en la API
+        let createdProduct;
+        try {
+          createdProduct = await productApiService.createProduct(productData);
+          console.log('Producto creado en la API:', createdProduct);
+        } catch (apiError) {
+          console.error('Error de API, guardando localmente:', apiError);
+          // Si falla la API, crear producto local
+          createdProduct = {
+            ...productData,
+            id: 'local_' + Date.now(),
+            created_at: new Date().toISOString(),
+            isLocal: true
+          };
+        }
 
         // Resetear el formulario
         this.resetForm();
 
         // Emitir evento para notificar que se agregó un producto
-        this.$emit('product-added', productData);
+        this.$emit('product-added', createdProduct);
 
         // Cerrar el modal
         this.closeModal();
