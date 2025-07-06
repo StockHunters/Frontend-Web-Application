@@ -1,40 +1,36 @@
 import { reactive } from "vue";
 import { useRouter } from "vue-router";
-import {FormValidation} from "@/auth/composables/useValidationForm.js";
-import i18n from '@shared/i18n/i18n.js';
-import {UserEntity} from "@/auth/models/user.entity.js";
-import {UserAssembler} from "@/auth/services/user.assembler.js";
-import {userService} from "@/auth/services/user.services.js";
-import {useAuth} from "@shared/composables/useAuth.js";
+import { FormValidation } from "@/auth/composables/useValidationForm.js";
+import i18n from "@shared/i18n/i18n.js";
+import { UserEntity } from "@/auth/models/user.entity.js";
+import { UserAssembler } from "@/auth/services/user.assembler.js";
+import { userService } from "@/auth/services/user.services.js";
+import { useAuth } from "@shared/composables/useAuth.js";
 import router from "@shared/router/index.js";
-const { t } = i18n.global;
 import { http } from "@/shared/api/httpClient";
 
+const { t } = i18n.global;
 
 export class SignUpForm {
-    constructor({firstname, lastname, email, password}) {
+    constructor({ firstname, lastname, email, password }) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
         this.password = password;
-
         this.errors = {};
     }
 
     transformData() {
-        const orgList = ['ORG001','ORG002','ORG003','ORG004','ORG005'];
-        const roleList = [ 'admin' ,'user'];
+        const orgList = ['ORG001', 'ORG002', 'ORG003', 'ORG004', 'ORG005'];
+        const roleList = ['admin', 'user'];
 
-        //const userId = `USR00${Math.floor(100 + Math.random() * 900)}`;
-        const userId = '';
+        const userId = Math.floor(100 + Math.random() * 900);
         const randomOrg = orgList[Math.floor(Math.random() * orgList.length)];
-
-        const randomRole = roleList[Math.floor(Math.random() * roleList.length)];
         const createdAt = new Date().toISOString();
 
         return new UserEntity(
             userId,
-            randomRole,
+            roleList[1],
             this.email.toLowerCase(),
             this.email,
             this.password,
@@ -46,7 +42,7 @@ export class SignUpForm {
         );
     }
 
-    validateForm(){
+    validateForm() {
         const validated = new FormValidation(this.email, this.password);
         this.errors = {};
 
@@ -63,7 +59,6 @@ export class SignUpForm {
         return Object.keys(this.errors).length === 0;
     }
 
-
     async createUser() {
         this.errors = {};
 
@@ -73,15 +68,17 @@ export class SignUpForm {
 
         try {
             const payload = {
-                email: this.email.toLowerCase(),
+                username: this.email.toLowerCase(),
                 password: this.password,
             };
 
-            const { data } = await http.post('/authentication/sign-up', payload);
-            console.log(data);
+            const { data: signUpData } = await http.post('/authentication/sign-up', payload);
 
-            if (data && data.token && data.id) {
-                await this.createUserAccount();
+            if (signUpData) {
+                const { data: signInData } = await http.post('/authentication/sign-in', payload);
+                const token = signInData.token;
+
+                await this.createUserAccount(token);
                 return { success: true };
             } else {
                 return { success: false, errors: { server: 'Respuesta inválida del servidor' } };
@@ -96,28 +93,40 @@ export class SignUpForm {
         }
     }
 
-
-    async createUserAccount(){
+    async createUserAccount(token) {
         this.errors = {};
 
-        if(!this.validateForm()){
-            return {success: false, errors: this.errors};
+        if (!this.validateForm()) {
+            return { success: false, errors: this.errors };
         }
 
-        try{
+        try {
+            localStorage.setItem("token", token);
             const tempUser = this.transformData();
-            if(tempUser === null){
-                return {success: false, errors: this.errors};
+
+            if (!tempUser) {
+                return { success: false, errors: { transform: "Falló la transformación del usuario" } };
             }
 
-            await userService.create(UserAssembler.fromUser(tempUser));
-            await useAuth().login(tempUser.pwdHash, tempUser.id, tempUser.organizationId);
+            const payload = UserAssembler.fromUser(tempUser);
+
+            console.log("Token usado:", localStorage.getItem("token"));
+            console.log("Payload a enviar:", payload);
+
+            await userService.create(payload); // Aquí usa el header con token
+            await useAuth().login(token, tempUser.id, tempUser.organizationId);
             await router.push('/session');
 
-        } catch (error){
-            console.log(error);
-        }
+            return { success: true };
 
+        } catch (error) {
+            if (error.response) {
+                console.error("Error del servidor:", error.response.data);
+            } else {
+                console.error("Error inesperado:", error.message);
+            }
+            return { success: false };
+        }
     }
 
 }
