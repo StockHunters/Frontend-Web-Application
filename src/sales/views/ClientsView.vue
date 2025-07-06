@@ -83,7 +83,7 @@ export default {
           this.error = null;
         } else {
           console.log('❌ No se pudo conectar a tu fake API de clientes');
-          this.error = "No se pudo conectar a tu fake API de clientes. Usando modo local.";
+          //this.error = "No se pudo conectar a tu fake API de clientes. Usando modo local.";
         }
 
         return isConnected;
@@ -104,7 +104,6 @@ export default {
 
         const isConnected = await this.testApiConnection();
 
-        if (true) {
           try {
             console.log('🔄 Obteniendo clientes de tu fake API...');
             const response = await clientService.getAll();
@@ -121,10 +120,6 @@ export default {
             this.clients = this.localClients;
             this.error = `Error al cargar clientes de tu API: ${apiError.message}`;
           }
-        } else {
-          this.clients = this.localClients;
-          this.error = "Sin conexión a tu fake API de clientes. Mostrando clientes guardados localmente.";
-        }
 
         console.log('📊 Total clientes mostrados:', this.clients.length);
 
