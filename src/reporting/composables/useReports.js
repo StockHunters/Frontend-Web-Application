@@ -44,7 +44,6 @@ export function useReports() {
         }
     })
 
-    // Cargar datos locales
     const loadLocalReports = () => {
         const stored = localStorage.getItem("local_reports")
         if (stored) {
@@ -54,14 +53,13 @@ export function useReports() {
                 console.log("📦 Reportes locales cargados:", parsedData)
             } catch (error) {
                 console.error("❌ Error al cargar reportes locales:", error)
-                loadMockData() // Fallback a datos mock
+                loadMockData()
             }
         } else {
-            loadMockData() // Si no hay datos locales, cargar mock
+            loadMockData()
         }
     }
 
-    // Guardar datos locales
     const saveLocalReports = () => {
         const dataToSave = {
             dailySales: localReportData.dailySales,
@@ -74,7 +72,6 @@ export function useReports() {
         console.log("💾 Reportes locales guardados:", dataToSave)
     }
 
-    // Probar conexión a la API
     const testApiConnection = async () => {
         console.log("🔍 Probando conexión a tu fake API de reportes...")
         connectionTested.value = true
@@ -109,7 +106,6 @@ export function useReports() {
         error.value = null
 
         try {
-            // Cargar datos locales primero
             loadLocalReports()
 
             // Probar conexión a tu API
@@ -133,18 +129,15 @@ export function useReports() {
                         totalInventory: reportData.totalInventory,
                     })
 
-                    // Guardar datos de la API como respaldo local
                     Object.assign(localReportData, reportData)
                     saveLocalReports()
                 } catch (apiError) {
                     console.warn("❌ Error al obtener reportes de tu API:", apiError)
                     apiConnected.value = false
-                    // Usar datos locales como fallback
                     Object.assign(reportData, localReportData)
                     error.value = `Error al cargar reportes de tu API: ${apiError.message}`
                 }
             } else {
-                // Solo usar datos locales
                 Object.assign(reportData, localReportData)
                 error.value = "Sin conexión a tu fake API de reportes. Mostrando datos guardados localmente."
             }
@@ -161,7 +154,6 @@ export function useReports() {
             console.error("❌ Error general:", err)
             error.value = `Error al cargar reportes: ${err.message}`
             apiConnected.value = false
-            // En caso de error, usar datos locales
             Object.assign(reportData, localReportData)
         } finally {
             loading.value = false
@@ -322,7 +314,6 @@ export function useReports() {
             console.error("❌ Error al generar PDF:", err)
             error.value = "Error al generar el PDF. Intenta nuevamente."
 
-            // Fallback: crear un PDF simple
             try {
                 const fallbackContent = `
           REPORTE DE VENTAS

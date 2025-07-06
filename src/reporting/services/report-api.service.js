@@ -55,17 +55,14 @@ export class ReportApiService extends ApiService {
         try {
             const salesData = await this.getSalesData()
 
-            // Agrupar ventas por día
             const dailySalesMap = {}
 
-            // Inicializar días de la semana
             const daysOfWeek = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
             daysOfWeek.forEach((day) => {
                 dailySalesMap[day] = { day, sales: 0, transactions: 0 }
             })
 
             salesData.forEach((sale) => {
-                // Extraer día de la fecha (asumiendo diferentes formatos posibles)
                 let day = "Lun" // Default
                 if (sale.date) {
                     const date = new Date(sale.date)
@@ -78,7 +75,6 @@ export class ReportApiService extends ApiService {
                     day = daysOfWeek[Math.floor(Math.random() * daysOfWeek.length)]
                 }
 
-                // Normalizar nombres de días
                 const dayMap = {
                     lun: "Lun",
                     mar: "Mar",
@@ -94,7 +90,6 @@ export class ReportApiService extends ApiService {
                     dailySalesMap[day] = { day, sales: 0, transactions: 0 }
                 }
 
-                // Calcular monto de venta más realista
                 const saleAmount = Number(sale.total || sale.amount || sale.price || 0)
                 const quantity = Number(sale.quantity || 1)
                 const finalAmount = saleAmount > 0 ? saleAmount : Math.random() * 500 + 50 // Entre 50 y 550
@@ -103,7 +98,6 @@ export class ReportApiService extends ApiService {
                 dailySalesMap[day].transactions += 1
             })
 
-            // Si no hay datos reales, generar datos simulados más realistas
             if (salesData.length === 0) {
                 daysOfWeek.forEach((day) => {
                     dailySalesMap[day] = {
@@ -132,13 +126,11 @@ export class ReportApiService extends ApiService {
         try {
             const [salesData, productsData] = await Promise.all([this.getSalesData(), this.getProductsData()])
 
-            // Crear mapa de productos para referencia
             const productsMap = {}
             productsData.forEach((product) => {
                 productsMap[product.id] = product
             })
 
-            // Contar ventas por producto
             const productSalesMap = {}
 
             salesData.forEach((sale) => {
@@ -158,7 +150,6 @@ export class ReportApiService extends ApiService {
                 productSalesMap[productName].sales += Number(sale.total || sale.amount || sale.price || 0)
             })
 
-            // Ordenar por cantidad vendida (descendente) y tomar top 5
             const result = Object.values(productSalesMap)
                 .sort((a, b) => b.quantity - a.quantity)
                 .slice(0, 5)
@@ -200,7 +191,6 @@ export class ReportApiService extends ApiService {
                 productSalesMap[productName].sales += Number(sale.total || sale.amount || sale.price || 0)
             })
 
-            // Ordenar por cantidad vendida (ascendente) y tomar bottom 5
             const result = Object.values(productSalesMap)
                 .sort((a, b) => a.quantity - b.quantity)
                 .slice(0, 5)
