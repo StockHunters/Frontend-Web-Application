@@ -53,7 +53,7 @@ const routes = [
     {
         path:'/app',
         name: 'app',
-        meta: {title: 'StockHunters | app', requiresAuth: true },
+        meta: {title: 'StockHunters | app', requiresAuth: false },
         component: AppLayout,
         children:[
             {
@@ -66,25 +66,25 @@ const routes = [
             {
                 path: 'clients',
                 name: 'app.clients',
-                meta: {title: 'StockHunters | clients', requiresAuth: true },
+                meta: {title: 'StockHunters | clients', requiresAuth: false },
                 component: ClientsView,
             },
             {
                 path:'products',
                 name:'app.products',
-                meta: {title: 'StockHunters | products', requiresAuth: true },
+                meta: {title: 'StockHunters | products', requiresAuth: false },
                 component: ProductsView
             },
             {
                 path:'sales',
                 name:'app.sales',
-                meta: {title: 'StockHunters | sales', requiresAuth: true },
+                meta: {title: 'StockHunters | sales', requiresAuth: false },
                 component: SalesView
             },
             {
                 path:'reports',
                 name:'app.reports',
-                meta: {title: 'StockHunters | reports', requiresAuth: true },
+                meta: {title: 'StockHunters | reports', requiresAuth: false },
                 component: ReportsView
             }
         ]
