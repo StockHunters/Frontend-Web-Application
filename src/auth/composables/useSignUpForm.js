@@ -73,7 +73,7 @@ export class SignUpForm {
 
         try {
             const payload = {
-                email: this.email.toLowerCase(),
+                username: this.email.toLowerCase(),
                 password: this.password,
             };
 
