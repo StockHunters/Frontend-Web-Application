@@ -104,7 +104,7 @@ export default {
 
         const isConnected = await this.testApiConnection();
 
-        if (isConnected) {
+        if (true) {
           try {
             console.log('🔄 Obteniendo clientes de tu fake API...');
             const response = await clientService.getAll();
