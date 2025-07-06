@@ -145,24 +145,28 @@ export default {
           required
       ></textarea>
 
-      <input
-          v-model="price"
-          type="number"
-          step="0.01"
-          min="0"
-          placeholder="Precio (S/.)"
-          :disabled="isLoading"
-          required
-      />
+      <div class="form-row">
+        <input
+            v-model="price"
+            type="number"
+            step="0.01"
+            min="0.01"
+            placeholder="Precio S/."
+            :disabled="isLoading"
+            required
+            class="price-input"
+        />
 
-      <input
-          v-model="stock"
-          type="number"
-          min="0"
-          placeholder="Cantidad en stock"
-          :disabled="isLoading"
-          required
-      />
+        <input
+            v-model="stock"
+            type="number"
+            min="0"
+            placeholder="Cantidad"
+            :disabled="isLoading"
+            required
+            class="stock-input"
+        />
+      </div>
 
       <DropdownButton
           v-model="category"
@@ -276,6 +280,40 @@ input:disabled, textarea:disabled {
 textarea {
   resize: vertical;
   min-height: 80px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.price-input, .stock-input {
+  font-weight: 500;
+}
+
+.price-input:focus {
+  border-color: #4CAF50;
+}
+
+.stock-input:focus {
+  border-color: #2196F3;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {
