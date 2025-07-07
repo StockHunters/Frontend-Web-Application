@@ -5,30 +5,26 @@ export class UserAssembler {
     static toUser(resource){
         return new UserEntity(
             resource.data.id,
-            resource.data.organization_id,
+            resource.data.organizationId,
             resource.data.username,
             resource.data.email,
-            resource.data.password_hash,
-            resource.data.first_name,
-            resource.data.last_name,
-            resource.data.profile_image_url,
-            resource.data.role,
-            resource.data.created_at,
+            resource.data.passwordHash,
+            resource.data.firstName,
+            resource.data.lastName,
+            resource.data.profileImageUrl,
         );
     }
 
     static toUserPreview(resource) {
         return new UserEntity(
             resource.id,
-            resource.organization_id,
+            resource.organizationId,
             resource.username,
             resource.email,
-            resource.password_hash,
-            resource.first_name,
-            resource.last_name,
-            resource.profile_image_url,
-            resource.role,
-            resource.created_at,
+            resource.passwordHash,
+            resource.firstName,
+            resource.lastName,
+            resource.profileImageUrl,
         );
     }
 

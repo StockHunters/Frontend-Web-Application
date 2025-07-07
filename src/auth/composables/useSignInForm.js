@@ -1,66 +1,82 @@
-import {userService} from "@/auth/services/user.services.js";
-import {UserAssembler} from "@/auth/services/user.assembler.js";
-import router from "@shared/router/index.js";
-import {useAuth} from "@shared/composables/useAuth.js";
-import {FormValidation} from "@/auth/composables/useValidationForm.js";
+// useSignInForm.js
+import router from '@shared/router/index.js';
+import { useAuth } from '@shared/composables/useAuth.js';
 import i18n from '@shared/i18n/i18n.js';
+import { http } from '@shared/api/httpClient.js';
+
 const { t } = i18n.global;
+const DEBUG = process.env.NODE_ENV !== 'production';
 
 export class SignInForm {
-    constructor({email, password}) {
+    constructor({ email = '', password = '' } = {}) {
         this.email = email;
         this.password = password;
         this.errors = {};
     }
 
-    async getUser(){
-        try {
-            let users = await userService.getAll({email: this.email});
-
-            if(users.data.length === 0) {
-                this.errors.user = 'Not Found';
-                return { success: false, error: this.errors }
-            }
-
-            return UserAssembler.toUserPreview(users.data[0]);
-        } catch (error){
-            console.log('getUser error: ' + error);
-        }
-    }
-
-    validateForm(){
-        const validated = new FormValidation(this.email, this.password);
+    /* ---------- Validación mínima ---------- */
+    validateForm() {
         this.errors = {};
 
-        const emailRequired = validated.requeried(this.email, t('alerts.email'));
-        const passwordRequired = validated.requeried(this.password, t('alerts.password'));
-
-        if (emailRequired) this.errors.email = emailRequired;
-        if (passwordRequired) this.errors.password = passwordRequired;
+        if (!this.email) {
+            this.errors.email = t('alerts.email') || 'Correo requerido';
+        }
+        if (!this.password) {
+            this.errors.password = t('alerts.password') || 'Contraseña requerida';
+        }
 
         return Object.keys(this.errors).length === 0;
     }
 
-    async login(){
-        this.errors = {};
+    /* ---------- Llamada al endpoint ---------- */
+    async signInRequest() {
+        const url = '/authentication/sign-in';
+        const payload = {
+            username: this.email, // el backend espera "username"
+            password: this.password
+        };
 
-        if(!this.validateForm()){
-            return {success: false, error: this.errors };
-        }
+        if (DEBUG) console.debug('[SignIn] POST', url, payload);
 
-        try{
-            let tempUser = await this.getUser();
+        try {
+            const { data, status } = await http.post(url, payload);
+            if (DEBUG) console.debug('[SignIn] OK', status, data);
+            return { success: true, data };
+        } catch (err) {
+            const status = err.response?.status;
+            if (DEBUG) console.error('[SignIn] ERR', status, err.response?.data);
 
-            if(this.email !== tempUser.email || this.password !== tempUser.pwdHash) {
-                this.errors.login = 'email or password is incorrect';
-                return {success: false, error: this.errors }
+            if (status === 401) {
+                this.errors.login = t('alerts.invalidCredentials') || 'Email o contraseña incorrectos';
+            } else {
+                this.errors.login = err.message || 'Error inesperado';
             }
 
-            useAuth().login(tempUser.pwdHash, tempUser.id, tempUser.organizationId);
-            router.push('/session');
-
-        } catch (error){
-            console.log('login error: ' + error);
+            return { success: false, error: this.errors };
         }
+    }
+
+    /* ---------- Punto de entrada ---------- */
+    async login() {
+        this.errors = {};
+
+        if (!this.validateForm()) {
+            return { success: false, error: this.errors };
+        }
+
+        const result = await this.signInRequest();
+        if (!result.success) return result;
+
+        const { token, id } = result.data;
+
+        // Guardar en Auth global
+        const auth = useAuth();
+        auth.login(token, id); // Asegúrate de que esta función guarde el token
+
+        // Guardar token en localStorage (opcional si useAuth lo hace)
+        localStorage.setItem('token', token);
+
+        await router.push('/session');
+        return { success: true };
     }
 }

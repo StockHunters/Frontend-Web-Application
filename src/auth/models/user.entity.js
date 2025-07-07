@@ -1,5 +1,5 @@
 export class UserEntity {
-    constructor(id = '',
+    constructor(id = 0,
                 organization_id= '',
                 username = '',
                 email = '',
