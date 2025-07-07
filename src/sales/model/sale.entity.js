@@ -15,7 +15,9 @@ export class Sale {
     toJson() {
         return {
             id: this.id,
-            date: this.date,
+            date: this.date instanceof Date
+                ? this.date.toISOString().split("T")[0]
+                : this.date,
             product_id: this.product_id,
             quantity: this.quantity,
             status: this.status,

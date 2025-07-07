@@ -243,6 +243,27 @@ export default {
       this.fetchProducts();
       console.log('🗑️ Productos locales eliminados');
     },
+    async createProduct(productData) {
+      try {
+        const response = await this.create(productData);
+        console.log("✅ Producto creado:", response);
+        return response;
+      } catch (error) {
+        console.error("❌ Error al crear producto:", error);
+
+        if (error.response?.status === 404) {
+          console.warn("API no soporta POST. Simulando respuesta mock.");
+          return {
+            ...productData,
+            id: `local_${Date.now()}`,
+            created_at: new Date().toISOString(),
+            isLocal: true
+          };
+        }
+
+        throw error;
+      }
+    },
 
     async deleteProduct(productId) {
       if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) {

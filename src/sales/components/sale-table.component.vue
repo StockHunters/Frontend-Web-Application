@@ -55,12 +55,12 @@ export default {
         this.loading = true;
         const apiService = new SaleApiService();
         await apiService.update(this.selectedSale.id, this.selectedSale);
-        alert('✅ Venta actualizada correctamente');
+        alert("✅ Venta actualizada correctamente");
         this.showEditDialog = false;
-        this.$router.go(0); // Recarga la página actual completamente
+        this.$emit("refresh"); // ← recarga usando el evento
       } catch (error) {
         console.error(error);
-        alert('❌ Error al actualizar la venta');
+        alert("❌ Error al actualizar la venta");
       } finally {
         this.loading = false;
       }
@@ -95,7 +95,7 @@ export default {
   </div>
   <SaleFormDialog
       v-model="showAddDialog"
-      @refresh="loadSales"
+      @refresh="$emit('refresh')"
   />
 
   <pv-table
