@@ -76,7 +76,7 @@ export class SignInForm {
         // Guardar token en localStorage (opcional si useAuth lo hace)
         localStorage.setItem('token', token);
 
-        await router.push('/session');
+        await router.push('/app');
         return { success: true };
     }
 }

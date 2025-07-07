@@ -1,13 +1,14 @@
 export class Sale {
-    constructor({ id = 0, date = '', product_id = 0, quantity = 0, status = '', customer_id = 0 }) {
+    constructor({ id = 0, date = '', productId = 0, clientId = 0, locationId = 0, quantity = 0, status = '', userId = 0 }) {
         this.id = id;
         this.date = date;
-        this.product_id = product_id;
         this.quantity = quantity;
-        this.status = status;
-        this.customer_id = customer_id;
+        this.status = true;
+        this.product_id = productId;
+        this.customer_id = clientId;
+        this.location_id = 1;
+        this.user_id = userId;
     }
-
     static createEmpty() {
         return new Sale({});
     }
@@ -15,13 +16,13 @@ export class Sale {
     toJson() {
         return {
             id: this.id,
-            date: this.date instanceof Date
-                ? this.date.toISOString().split("T")[0]
-                : this.date,
-            product_id: this.product_id,
+            date: this.date instanceof Date ? this.date.toISOString() : this.date,
             quantity: this.quantity,
-            status: this.status,
-            customer_id: this.customer_id
+            status: true,
+            productId: this.product_id,
+            clientId: this.customer_id,
+            userId: this.user_id,
+            locationId: 1
         };
     }
 }

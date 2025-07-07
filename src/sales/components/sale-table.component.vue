@@ -25,7 +25,6 @@ export default {
         { field: "date", header: "Fecha" },
         { field: "product_id", header: "Producto" },
         { field: "quantity", header: "Cantidad" },
-        { field: "status", header: "Estado" },
         { field: "customer_id", header: "Cliente" }
       ];
     },
@@ -123,10 +122,6 @@ export default {
     <div class="field">
       <label>Cantidad</label>
       <pv-input-text v-model="selectedSale.quantity" />
-    </div>
-    <div class="field">
-      <label>Estado</label>
-      <pv-dropdown v-model="selectedSale.status" :options="['Completado', 'En proceso de pago']" />
     </div>
     <pv-button label="Guardar" @click="saveSale" class="mt-3" />
   </pv-dialog>

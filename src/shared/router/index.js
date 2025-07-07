@@ -93,15 +93,17 @@ const routes = [
         path: '/session',
         name: 'session',
         meta: {title: 'StockHunters | session', requiresAuth: true },
-        component: SessionLayout,
-        children: [
+        redirect: '/app',
+        //component: SessionLayout,
+
+        /*children: [
             {
                 path: '',
                 name: 'session.main',
                 meta: { title: 'StockHunters | session', requiresAuth: true },
                 component: SessionView,
             }
-        ]
+        ]*/
     },
     {
         path: '/:pathMatch(.*)*',

@@ -2,7 +2,7 @@ import { ApiService } from "@shared/api/apiServices.js";
 
 export class SaleApiService extends ApiService {
     constructor() {
-        super("sales");
+        super("sale");
     }
 
     getCompletedSales() {
