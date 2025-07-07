@@ -127,7 +127,7 @@ export default {
           }
         } else {
           this.products = this.localProducts;
-          this.error = "Sin conexión a tu fake API. Mostrando productos guardados localmente.";
+          this.error = "";
         }
 
         console.log('📊 Total productos mostrados:', this.products.length);
